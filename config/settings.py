@@ -59,6 +59,16 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 
+REST_FRAMEWORK = {
+    # Authentication is not part of this stage yet, so the API is public and
+    # does not need session/CSRF handling.
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "UNAUTHENTICATED_USER": None,
+    # Same JSON error shape for every endpoint.
+    "EXCEPTION_HANDLER": "catalog.exceptions.api_exception_handler",
+}
+
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
@@ -112,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "uk"
 
 TIME_ZONE = "UTC"
 
