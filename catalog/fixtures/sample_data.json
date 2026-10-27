@@ -1,0 +1,216 @@
+[
+  {
+    "model": "catalog.datacenter",
+    "pk": 1,
+    "fields": {
+      "name": "us-central1-a",
+      "region_code": "us-central1",
+      "city": "Council Bluffs",
+      "country": "USA",
+      "sla_percent": "99.99",
+      "created_at": "2026-10-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.datacenter",
+    "pk": 2,
+    "fields": {
+      "name": "europe-west3-a",
+      "region_code": "europe-west3",
+      "city": "Frankfurt",
+      "country": "Germany",
+      "sla_percent": "99.99",
+      "created_at": "2026-10-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.datacenter",
+    "pk": 3,
+    "fields": {
+      "name": "europe-central2-a",
+      "region_code": "europe-central2",
+      "city": "Warsaw",
+      "country": "Poland",
+      "sla_percent": "99.95",
+      "created_at": "2026-10-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.datacenter",
+    "pk": 4,
+    "fields": {
+      "name": "asia-northeast1-a",
+      "region_code": "asia-northeast1",
+      "city": "Tokyo",
+      "country": "Japan",
+      "sla_percent": "99.90",
+      "created_at": "2026-10-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.hardwarevendor",
+    "pk": 1,
+    "fields": {
+      "name": "NVIDIA",
+      "architecture": "Ampere / Hopper",
+      "website": "https://www.nvidia.com",
+      "created_at": "2026-10-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.hardwarevendor",
+    "pk": 2,
+    "fields": {
+      "name": "Google Cloud TPU",
+      "architecture": "TPU v4 Tensor Core",
+      "website": "https://cloud.google.com/tpu",
+      "created_at": "2026-10-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.hardwarevendor",
+    "pk": 3,
+    "fields": {
+      "name": "Ampere Computing",
+      "architecture": "Altra Arm64",
+      "website": "https://amperecomputing.com",
+      "created_at": "2026-10-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.hardwarevendor",
+    "pk": 4,
+    "fields": {
+      "name": "AMD",
+      "architecture": "EPYC Genoa / Instinct MI300X",
+      "website": "https://www.amd.com",
+      "created_at": "2026-10-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.instancetype",
+    "pk": 1,
+    "fields": {
+      "name": "a2-highgpu-1g",
+      "category": "accelerator_optimized",
+      "description": "Оптимізовано для тренування нейромереж та LLM інференсу.",
+      "vcpu": 12,
+      "ram_gb": 85,
+      "gpu_model": "NVIDIA A100 40GB",
+      "gpu_count": 1,
+      "storage_type": "NVMe SSD",
+      "storage_size_gb": 500,
+      "network_bandwidth_gbps": 10,
+      "hourly_price": "3.67",
+      "is_available": true,
+      "datacenter": 2,
+      "vendor": 1,
+      "created_at": "2026-10-02T10:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.instancetype",
+    "pk": 2,
+    "fields": {
+      "name": "a3-highgpu-8g",
+      "category": "accelerator_optimized",
+      "description": "8 × H100 для тренування великих мовних моделей.",
+      "vcpu": 208,
+      "ram_gb": 1872,
+      "gpu_model": "NVIDIA H100 80GB",
+      "gpu_count": 8,
+      "storage_type": "NVMe SSD",
+      "storage_size_gb": 6000,
+      "network_bandwidth_gbps": 200,
+      "hourly_price": "88.25",
+      "is_available": true,
+      "datacenter": 1,
+      "vendor": 1,
+      "created_at": "2026-10-02T10:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.instancetype",
+    "pk": 3,
+    "fields": {
+      "name": "ct4p-hightpu-4t",
+      "category": "accelerator_optimized",
+      "description": "Cloud TPU v4 pod slice для JAX / TensorFlow.",
+      "vcpu": 240,
+      "ram_gb": 407,
+      "gpu_model": "TPU v4",
+      "gpu_count": 4,
+      "storage_type": "SSD",
+      "storage_size_gb": 1000,
+      "network_bandwidth_gbps": 100,
+      "hourly_price": "12.88",
+      "is_available": false,
+      "datacenter": 1,
+      "vendor": 2,
+      "created_at": "2026-10-02T10:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.instancetype",
+    "pk": 4,
+    "fields": {
+      "name": "t2a-standard-4",
+      "category": "general",
+      "description": "Енергоефективний ARM інстанс для бекенду та мікросервісів.",
+      "vcpu": 4,
+      "ram_gb": 16,
+      "gpu_model": "",
+      "gpu_count": 0,
+      "storage_type": "SSD",
+      "storage_size_gb": 100,
+      "network_bandwidth_gbps": 5,
+      "hourly_price": "0.15",
+      "is_available": true,
+      "datacenter": 3,
+      "vendor": 3,
+      "created_at": "2026-10-02T10:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.instancetype",
+    "pk": 5,
+    "fields": {
+      "name": "c3d-highcpu-30",
+      "category": "compute_optimized",
+      "description": "Високочастотні ядра AMD EPYC для пакетної обробки даних.",
+      "vcpu": 30,
+      "ram_gb": 59,
+      "gpu_model": "",
+      "gpu_count": 0,
+      "storage_type": "NVMe SSD",
+      "storage_size_gb": 375,
+      "network_bandwidth_gbps": 32,
+      "hourly_price": "1.13",
+      "is_available": true,
+      "datacenter": 2,
+      "vendor": 4,
+      "created_at": "2026-10-02T10:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.instancetype",
+    "pk": 6,
+    "fields": {
+      "name": "e2-standard-2",
+      "category": "general",
+      "description": "Недорогий інстанс для невеликих вебзастосунків.",
+      "vcpu": 2,
+      "ram_gb": 8,
+      "gpu_model": "",
+      "gpu_count": 0,
+      "storage_type": "HDD",
+      "storage_size_gb": 50,
+      "network_bandwidth_gbps": 1,
+      "hourly_price": "0.07",
+      "is_available": true,
+      "datacenter": 3,
+      "vendor": 4,
+      "created_at": "2026-10-02T10:00:00Z"
+    }
+  }
+]
