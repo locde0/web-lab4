@@ -1,0 +1,2877 @@
+{
+  "info": {
+    "_postman_id": "3ab04603-47c5-50ec-a316-4c5cd75b33e3",
+    "name": "SkyCompute API",
+    "description": "CRUD для датацентрів, апаратних вендорів і серверів (інстансів) SkyCompute.\n\nПеред запуском: `python manage.py migrate`, `python manage.py loaddata sample_data`, `python manage.py runserver`.\nЗапити розраховані на послідовний запуск через Collection Runner: create-запити зберігають id у змінні колекції, а папка Cleanup видаляє створені об'єкти.\n\nУсі помилки мають формат `{\"error\": {\"status\", \"code\", \"message\", \"details\"}}`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Datacenters",
+      "item": [
+        {
+          "name": "List datacenters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datacenters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/datacenters",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"us-central1-a\",\n    \"region_code\": \"us-central1\",\n    \"city\": \"Council Bluffs\",\n    \"country\": \"USA\",\n    \"sla_percent\": \"99.99\",\n    \"created_at\": \"2026-10-01T09:00:00Z\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"europe-west3-a\",\n    \"region_code\": \"europe-west3\",\n    \"city\": \"Frankfurt\",\n    \"country\": \"Germany\",\n    \"sla_percent\": \"99.99\",\n    \"created_at\": \"2026-10-01T09:00:00Z\"\n  },\n  {\n    \"id\": 3,\n    \"name\": \"europe-central2-a\",\n    \"region_code\": \"europe-central2\",\n    \"city\": \"Warsaw\",\n    \"country\": \"Poland\",\n    \"sla_percent\": \"99.95\",\n    \"created_at\": \"2026-10-01T09:00:00Z\"\n  },\n  {\n    \"id\": 4,\n    \"name\": \"asia-northeast1-a\",\n    \"region_code\": \"asia-northeast1\",\n    \"city\": \"Tokyo\",\n    \"country\": \"Japan\",\n    \"sla_percent\": \"99.90\",\n    \"created_at\": \"2026-10-01T09:00:00Z\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create datacenter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.collectionVariables.set(\"datacenter_id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/datacenters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters"
+              ]
+            },
+            "description": "Створює датацентр і зберігає його id у змінну {{datacenter_id}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/datacenters",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters"
+                  ]
+                },
+                "description": "Створює датацентр і зберігає його id у змінну {{datacenter_id}}.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\",\n  \"created_at\": \"2026-10-27T18:20:23.724548Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get datacenter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters",
+                "{{datacenter_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters",
+                    "{{datacenter_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\",\n  \"created_at\": \"2026-10-27T18:20:23.724548Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update datacenter (PUT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters",
+                "{{datacenter_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.95\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters",
+                    "{{datacenter_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.95\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.95\",\n  \"created_at\": \"2026-10-27T18:20:23.724548Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Partial update datacenter (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters",
+                "{{datacenter_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"city\": \"Hamina (Kymenlaakso)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters",
+                    "{{datacenter_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"city\": \"Hamina (Kymenlaakso)\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina (Kymenlaakso)\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.95\",\n  \"created_at\": \"2026-10-27T18:20:23.724548Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List instances in datacenter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datacenters/2/instances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters",
+                "2",
+                "instances"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/datacenters/2/instances",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters",
+                    "2",
+                    "instances"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"a2-highgpu-1g\",\n    \"category\": \"accelerator_optimized\",\n    \"vcpu\": 12,\n    \"ram_gb\": 85,\n    \"gpu_model\": \"NVIDIA A100 40GB\",\n    \"gpu_count\": 1,\n    \"hourly_price\": \"3.67\",\n    \"datacenter\": {\n      \"id\": 2,\n      \"name\": \"europe-west3-a\",\n      \"city\": \"Frankfurt\"\n    },\n    \"vendor\": {\n      \"id\": 1,\n      \"name\": \"NVIDIA\"\n    },\n    \"is_available\": true\n  },\n  {\n    \"id\": 5,\n    \"name\": \"c3d-highcpu-30\",\n    \"category\": \"compute_optimized\",\n    \"vcpu\": 30,\n    \"ram_gb\": 59,\n    \"gpu_model\": null,\n    \"gpu_count\": 0,\n    \"hourly_price\": \"1.13\",\n    \"datacenter\": {\n      \"id\": 2,\n      \"name\": \"europe-west3-a\",\n      \"city\": \"Frankfurt\"\n    },\n    \"vendor\": {\n      \"id\": 4,\n      \"name\": \"AMD\"\n    },\n    \"is_available\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create datacenter - 400 invalid data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/datacenters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters"
+              ]
+            },
+            "description": "Дубльована назва, порожній region_code та SLA > 100.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"europe-west3-a\",\n  \"region_code\": \"\",\n  \"city\": \"Frankfurt\",\n  \"country\": \"Germany\",\n  \"sla_percent\": \"120\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/datacenters",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters"
+                  ]
+                },
+                "description": "Дубльована назва, порожній region_code та SLA > 100.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"europe-west3-a\",\n  \"region_code\": \"\",\n  \"city\": \"Frankfurt\",\n  \"country\": \"Germany\",\n  \"sla_percent\": \"120\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 400,\n    \"code\": \"validation_error\",\n    \"message\": \"Передані дані некоректні. Виправте помилки, наведені в полі details, і повторіть запит.\",\n    \"details\": {\n      \"name\": [\n        \"datacenter з таким name вже існує.\"\n      ],\n      \"region_code\": [\n        \"Це поле не може бути порожнім.\"\n      ],\n      \"sla_percent\": [\n        \"Переконайтесь, що значення менше або дорівнює 100.\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get datacenter - 404 not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datacenters/9999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters",
+                "9999"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/datacenters/9999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters",
+                    "9999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 404,\n    \"code\": \"not_found\",\n    \"message\": \"Датацентр з id=9999 не знайдено.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Vendors",
+      "item": [
+        {
+          "name": "List vendors",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/vendors",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"NVIDIA\",\n    \"architecture\": \"Ampere / Hopper\",\n    \"website\": \"https://www.nvidia.com\",\n    \"created_at\": \"2026-10-01T09:00:00Z\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Google Cloud TPU\",\n    \"architecture\": \"TPU v4 Tensor Core\",\n    \"website\": \"https://cloud.google.com/tpu\",\n    \"created_at\": \"2026-10-01T09:00:00Z\"\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Ampere Computing\",\n    \"architecture\": \"Altra Arm64\",\n    \"website\": \"https://amperecomputing.com\",\n    \"created_at\": \"2026-10-01T09:00:00Z\"\n  },\n  {\n    \"id\": 4,\n    \"name\": \"AMD\",\n    \"architecture\": \"EPYC Genoa / Instinct MI300X\",\n    \"website\": \"https://www.amd.com\",\n    \"created_at\": \"2026-10-01T09:00:00Z\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.collectionVariables.set(\"vendor_id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors"
+              ]
+            },
+            "description": "Створює вендора і зберігає його id у змінну {{vendor_id}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Sapphire Rapids\",\n  \"website\": \"https://www.intel.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/vendors",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors"
+                  ]
+                },
+                "description": "Створює вендора і зберігає його id у змінну {{vendor_id}}.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Sapphire Rapids\",\n  \"website\": \"https://www.intel.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Sapphire Rapids\",\n  \"website\": \"https://www.intel.com\",\n  \"created_at\": \"2026-10-27T18:20:23.800718Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vendors/{{vendor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                "{{vendor_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/vendors/{{vendor_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors",
+                    "{{vendor_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Sapphire Rapids\",\n  \"website\": \"https://www.intel.com\",\n  \"created_at\": \"2026-10-27T18:20:23.800718Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update vendor (PUT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendors/{{vendor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                "{{vendor_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Emerald Rapids\",\n  \"website\": \"https://www.intel.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/vendors/{{vendor_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors",
+                    "{{vendor_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Emerald Rapids\",\n  \"website\": \"https://www.intel.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Emerald Rapids\",\n  \"website\": \"https://www.intel.com\",\n  \"created_at\": \"2026-10-27T18:20:23.800718Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Partial update vendor (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendors/{{vendor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                "{{vendor_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"website\": \"https://www.intel.com/xeon\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/vendors/{{vendor_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors",
+                    "{{vendor_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"website\": \"https://www.intel.com/xeon\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Emerald Rapids\",\n  \"website\": \"https://www.intel.com/xeon\",\n  \"created_at\": \"2026-10-27T18:20:23.800718Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List instances of vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vendors/1/instances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                "1",
+                "instances"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/vendors/1/instances",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors",
+                    "1",
+                    "instances"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"a2-highgpu-1g\",\n    \"category\": \"accelerator_optimized\",\n    \"vcpu\": 12,\n    \"ram_gb\": 85,\n    \"gpu_model\": \"NVIDIA A100 40GB\",\n    \"gpu_count\": 1,\n    \"hourly_price\": \"3.67\",\n    \"datacenter\": {\n      \"id\": 2,\n      \"name\": \"europe-west3-a\",\n      \"city\": \"Frankfurt\"\n    },\n    \"vendor\": {\n      \"id\": 1,\n      \"name\": \"NVIDIA\"\n    },\n    \"is_available\": true\n  },\n  {\n    \"id\": 2,\n    \"name\": \"a3-highgpu-8g\",\n    \"category\": \"accelerator_optimized\",\n    \"vcpu\": 208,\n    \"ram_gb\": 1872,\n    \"gpu_model\": \"NVIDIA H100 80GB\",\n    \"gpu_count\": 8,\n    \"hourly_price\": \"88.25\",\n    \"datacenter\": {\n      \"id\": 1,\n      \"name\": \"us-central1-a\",\n      \"city\": \"Council Bluffs\"\n    },\n    \"vendor\": {\n      \"id\": 1,\n      \"name\": \"NVIDIA\"\n    },\n    \"is_available\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create vendor - 400 invalid data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"website\": \"not-a-url\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/vendors",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"\",\n  \"website\": \"not-a-url\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 400,\n    \"code\": \"validation_error\",\n    \"message\": \"Передані дані некоректні. Виправте помилки, наведені в полі details, і повторіть запит.\",\n    \"details\": {\n      \"name\": [\n        \"Це поле не може бути порожнім.\"\n      ],\n      \"architecture\": [\n        \"Це поле обов'язкове.\"\n      ],\n      \"website\": [\n        \"Введіть коректний URL.\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get vendor - 404 not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vendors/9999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                "9999"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/vendors/9999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors",
+                    "9999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 404,\n    \"code\": \"not_found\",\n    \"message\": \"Вендора з id=9999 не знайдено.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Instances",
+      "item": [
+        {
+          "name": "List instances",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/instances?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/instances?page=1&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"total\": 6,\n  \"page\": 1,\n  \"limit\": 10,\n  \"results\": [\n    {\n      \"id\": 1,\n      \"name\": \"a2-highgpu-1g\",\n      \"category\": \"accelerator_optimized\",\n      \"vcpu\": 12,\n      \"ram_gb\": 85,\n      \"gpu_model\": \"NVIDIA A100 40GB\",\n      \"gpu_count\": 1,\n      \"hourly_price\": \"3.67\",\n      \"datacenter\": {\n        \"id\": 2,\n        \"name\": \"europe-west3-a\",\n        \"city\": \"Frankfurt\"\n      },\n      \"vendor\": {\n        \"id\": 1,\n        \"name\": \"NVIDIA\"\n      },\n      \"is_available\": true\n    },\n    {\n      \"id\": 2,\n      \"name\": \"a3-highgpu-8g\",\n      \"category\": \"accelerator_optimized\",\n      \"vcpu\": 208,\n      \"ram_gb\": 1872,\n      \"gpu_model\": \"NVIDIA H100 80GB\",\n      \"gpu_count\": 8,\n      \"hourly_price\": \"88.25\",\n      \"datacenter\": {\n        \"id\": 1,\n        \"name\": \"us-central1-a\",\n        \"city\": \"Council Bluffs\"\n      },\n      \"vendor\": {\n        \"id\": 1,\n        \"name\": \"NVIDIA\"\n      },\n      \"is_available\": true\n    },\n    {\n      \"id\": 3,\n      \"name\": \"ct4p-hightpu-4t\",\n      \"category\": \"accelerator_optimized\",\n      \"vcpu\": 240,\n      \"ram_gb\": 407,\n      \"gpu_model\": \"TPU v4\",\n      \"gpu_count\": 4,\n      \"hourly_price\": \"12.88\",\n      \"datacenter\": {\n        \"id\": 1,\n        \"name\": \"us-central1-a\",\n        \"city\": \"Council Bluffs\"\n      },\n      \"vendor\": {\n        \"id\": 2,\n        \"name\": \"Google Cloud TPU\"\n      },\n      \"is_available\": false\n    },\n    {\n      \"id\": 4,\n      \"name\": \"t2a-standard-4\",\n      \"category\": \"general\",\n      \"vcpu\": 4,\n      \"ram_gb\": 16,\n      \"gpu_model\": null,\n      \"gpu_count\": 0,\n      \"hourly_price\": \"0.15\",\n      \"datacenter\": {\n        \"id\": 3,\n        \"name\": \"europe-central2-a\",\n        \"city\": \"Warsaw\"\n      },\n      \"vendor\": {\n        \"id\": 3,\n        \"name\": \"Ampere Computing\"\n      },\n      \"is_available\": true\n    },\n    {\n      \"id\": 5,\n      \"name\": \"c3d-highcpu-30\",\n      \"category\": \"compute_optimized\",\n      \"vcpu\": 30,\n      \"ram_gb\": 59,\n      \"gpu_model\": null,\n      \"gpu_count\": 0,\n      \"hourly_price\": \"1.13\",\n      \"datacenter\": {\n        \"id\": 2,\n        \"name\": \"europe-west3-a\",\n        \"city\": \"Frankfurt\"\n      },\n      \"vendor\": {\n        \"id\": 4,\n        \"name\": \"AMD\"\n      },\n      \"is_available\": true\n    },\n    {\n      \"id\": 6,\n      \"name\": \"e2-standard-2\",\n      \"category\": \"general\",\n      \"vcpu\": 2,\n      \"ram_gb\": 8,\n      \"gpu_model\": null,\n      \"gpu_count\": 0,\n      \"hourly_price\": \"0.07\",\n      \"datacenter\": {\n        \"id\": 3,\n        \"name\": \"europe-central2-a\",\n        \"city\": \"Warsaw\"\n      },\n      \"vendor\": {\n        \"id\": 4,\n        \"name\": \"AMD\"\n      },\n      \"is_available\": true\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List instances - search, filter, sort",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/instances?search=nvidia&category=accelerator_optimized&sort=-price&limit=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "nvidia"
+                },
+                {
+                  "key": "category",
+                  "value": "accelerator_optimized"
+                },
+                {
+                  "key": "sort",
+                  "value": "-price"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/instances?search=nvidia&category=accelerator_optimized&sort=-price&limit=5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "nvidia"
+                    },
+                    {
+                      "key": "category",
+                      "value": "accelerator_optimized"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "-price"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "5"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"total\": 2,\n  \"page\": 1,\n  \"limit\": 5,\n  \"results\": [\n    {\n      \"id\": 2,\n      \"name\": \"a3-highgpu-8g\",\n      \"category\": \"accelerator_optimized\",\n      \"vcpu\": 208,\n      \"ram_gb\": 1872,\n      \"gpu_model\": \"NVIDIA H100 80GB\",\n      \"gpu_count\": 8,\n      \"hourly_price\": \"88.25\",\n      \"datacenter\": {\n        \"id\": 1,\n        \"name\": \"us-central1-a\",\n        \"city\": \"Council Bluffs\"\n      },\n      \"vendor\": {\n        \"id\": 1,\n        \"name\": \"NVIDIA\"\n      },\n      \"is_available\": true\n    },\n    {\n      \"id\": 1,\n      \"name\": \"a2-highgpu-1g\",\n      \"category\": \"accelerator_optimized\",\n      \"vcpu\": 12,\n      \"ram_gb\": 85,\n      \"gpu_model\": \"NVIDIA A100 40GB\",\n      \"gpu_count\": 1,\n      \"hourly_price\": \"3.67\",\n      \"datacenter\": {\n        \"id\": 2,\n        \"name\": \"europe-west3-a\",\n        \"city\": \"Frankfurt\"\n      },\n      \"vendor\": {\n        \"id\": 1,\n        \"name\": \"NVIDIA\"\n      },\n      \"is_available\": true\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List instances - by datacenter and vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/instances?datacenter_id=3&vendor_id=4",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances"
+              ],
+              "query": [
+                {
+                  "key": "datacenter_id",
+                  "value": "3"
+                },
+                {
+                  "key": "vendor_id",
+                  "value": "4"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/instances?datacenter_id=3&vendor_id=4",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances"
+                  ],
+                  "query": [
+                    {
+                      "key": "datacenter_id",
+                      "value": "3"
+                    },
+                    {
+                      "key": "vendor_id",
+                      "value": "4"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"total\": 1,\n  \"page\": 1,\n  \"limit\": 10,\n  \"results\": [\n    {\n      \"id\": 6,\n      \"name\": \"e2-standard-2\",\n      \"category\": \"general\",\n      \"vcpu\": 2,\n      \"ram_gb\": 8,\n      \"gpu_model\": null,\n      \"gpu_count\": 0,\n      \"hourly_price\": \"0.07\",\n      \"datacenter\": {\n        \"id\": 3,\n        \"name\": \"europe-central2-a\",\n        \"city\": \"Warsaw\"\n      },\n      \"vendor\": {\n        \"id\": 4,\n        \"name\": \"AMD\"\n      },\n      \"is_available\": true\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List instances - 400 invalid query params",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/instances?sort=name&page=0&category=gaming",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "name"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "category",
+                  "value": "gaming"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/instances?sort=name&page=0&category=gaming",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances"
+                  ],
+                  "query": [
+                    {
+                      "key": "sort",
+                      "value": "name"
+                    },
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "category",
+                      "value": "gaming"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 400,\n    \"code\": \"validation_error\",\n    \"message\": \"Передані дані некоректні. Виправте помилки, наведені в полі details, і повторіть запит.\",\n    \"details\": {\n      \"category\": [\n        \"Допустимі значення: general, compute_optimized, accelerator_optimized.\"\n      ],\n      \"sort\": [\n        \"Допустимі значення: price, -price, ram_gb, -ram_gb.\"\n      ],\n      \"page\": [\n        \"Значення має бути не менше 1.\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create instance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.collectionVariables.set(\"instance_id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/instances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances"
+              ]
+            },
+            "description": "Використовує {{datacenter_id}} та {{vendor_id}}, створені раніше. Зберігає id у змінну {{instance_id}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": {{datacenter_id}},\n  \"vendor_id\": {{vendor_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/instances",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances"
+                  ]
+                },
+                "description": "Використовує {{datacenter_id}} та {{vendor_id}}, створені раніше. Зберігає id у змінну {{instance_id}}.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": {{datacenter_id}},\n  \"vendor_id\": {{vendor_id}}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": 5,\n  \"vendor_id\": 5,\n  \"is_available\": true,\n  \"created_at\": \"2026-10-27T18:20:23.860016Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get instance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/instances/{{instance_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances",
+                "{{instance_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/instances/{{instance_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances",
+                    "{{instance_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"is_available\": true,\n  \"datacenter\": {\n    \"id\": 5,\n    \"name\": \"europe-north1-a\",\n    \"region_code\": \"europe-north1\",\n    \"city\": \"Hamina (Kymenlaakso)\",\n    \"country\": \"Finland\"\n  },\n  \"vendor\": {\n    \"id\": 5,\n    \"name\": \"Intel\",\n    \"architecture\": \"Xeon Emerald Rapids\"\n  },\n  \"created_at\": \"2026-10-27T18:20:23.860016Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update instance (PUT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/instances/{{instance_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances",
+                "{{instance_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 16,\n  \"ram_gb\": 64,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.78\",\n  \"datacenter_id\": {{datacenter_id}},\n  \"vendor_id\": {{vendor_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/instances/{{instance_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances",
+                    "{{instance_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 16,\n  \"ram_gb\": 64,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.78\",\n  \"datacenter_id\": {{datacenter_id}},\n  \"vendor_id\": {{vendor_id}}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 16,\n  \"ram_gb\": 64,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.78\",\n  \"datacenter_id\": 5,\n  \"vendor_id\": 5,\n  \"is_available\": true,\n  \"created_at\": \"2026-10-27T18:20:23.860016Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Partial update instance (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/instances/{{instance_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances",
+                "{{instance_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_available\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/instances/{{instance_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances",
+                    "{{instance_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"is_available\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 16,\n  \"ram_gb\": 64,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.78\",\n  \"datacenter_id\": 5,\n  \"vendor_id\": 5,\n  \"is_available\": false,\n  \"created_at\": \"2026-10-27T18:20:23.860016Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create instance - 400 validation errors",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/instances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"a2-highgpu-1g\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 0,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"floppy\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"-1\",\n  \"datacenter_id\": {{datacenter_id}},\n  \"vendor_id\": {{vendor_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/instances",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"a2-highgpu-1g\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 0,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"floppy\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"-1\",\n  \"datacenter_id\": {{datacenter_id}},\n  \"vendor_id\": {{vendor_id}}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 400,\n    \"code\": \"validation_error\",\n    \"message\": \"Передані дані некоректні. Виправте помилки, наведені в полі details, і повторіть запит.\",\n    \"details\": {\n      \"name\": [\n        \"instance type з таким name вже існує.\"\n      ],\n      \"vcpu\": [\n        \"Переконайтесь, що значення більше або дорівнює 1.\"\n      ],\n      \"storage_type\": [\n        \"\\\"floppy\\\" не є коректним вибором.\"\n      ],\n      \"hourly_price\": [\n        \"Переконайтесь, що значення більше або дорівнює 0.01.\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create instance - 400 accelerator without GPU",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/instances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances"
+              ]
+            },
+            "description": "Бізнес-правило: інстанс категорії accelerator_optimized повинен мати GPU.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"a2-fake\",\n  \"category\": \"accelerator_optimized\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": {{datacenter_id}},\n  \"vendor_id\": {{vendor_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/instances",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances"
+                  ]
+                },
+                "description": "Бізнес-правило: інстанс категорії accelerator_optimized повинен мати GPU.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"a2-fake\",\n  \"category\": \"accelerator_optimized\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": {{datacenter_id}},\n  \"vendor_id\": {{vendor_id}}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 400,\n    \"code\": \"validation_error\",\n    \"message\": \"Передані дані некоректні. Виправте помилки, наведені в полі details, і повторіть запит.\",\n    \"details\": {\n      \"gpu_count\": [\n        \"Інстанс категорії accelerator_optimized повинен мати хоча б один GPU.\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create instance - 400 unknown datacenter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/instances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"n2-ghost\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": 9999,\n  \"vendor_id\": {{vendor_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/instances",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"n2-ghost\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": 9999,\n  \"vendor_id\": {{vendor_id}}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 400,\n    \"code\": \"validation_error\",\n    \"message\": \"Передані дані некоректні. Виправте помилки, наведені в полі details, і повторіть запит.\",\n    \"details\": {\n      \"datacenter_id\": [\n        \"Датацентр з id=9999 не існує.\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get instance - 404 not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/instances/9999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances",
+                "9999"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/instances/9999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances",
+                    "9999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 404,\n    \"code\": \"not_found\",\n    \"message\": \"Сервер (інстанс) з id=9999 не знайдено.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Business rules & errors",
+      "item": [
+        {
+          "name": "Delete datacenter with instances - 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters",
+                "{{datacenter_id}}"
+              ]
+            },
+            "description": "Неможливо видалити датацентр, у якому розміщені сервери."
+          },
+          "response": [
+            {
+              "name": "409 Conflict",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters",
+                    "{{datacenter_id}}"
+                  ]
+                },
+                "description": "Неможливо видалити датацентр, у якому розміщені сервери."
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 409,\n    \"code\": \"datacenter_has_instances\",\n    \"message\": \"Неможливо видалити датацентр «europe-north1-a», оскільки в ньому розміщено 1 сервер. Спочатку видаліть ці сервери або перенесіть їх в інший датацентр.\",\n    \"details\": {\n      \"instances_count\": 1\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete vendor with instances - 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vendors/{{vendor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                "{{vendor_id}}"
+              ]
+            },
+            "description": "Неможливо видалити вендора, за яким закріплені сервери."
+          },
+          "response": [
+            {
+              "name": "409 Conflict",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/vendors/{{vendor_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors",
+                    "{{vendor_id}}"
+                  ]
+                },
+                "description": "Неможливо видалити вендора, за яким закріплені сервери."
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 409,\n    \"code\": \"vendor_has_instances\",\n    \"message\": \"Неможливо видалити вендора «Intel», оскільки за ним закріплено 1 сервер. Спочатку видаліть ці сервери або змініть для них вендора.\",\n    \"details\": {\n      \"instances_count\": 1\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete fixture datacenter with instances - 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datacenters/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "409 Conflict",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/datacenters/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters",
+                    "1"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 409,\n    \"code\": \"datacenter_has_instances\",\n    \"message\": \"Неможливо видалити датацентр «us-central1-a», оскільки в ньому розміщено 2 сервери. Спочатку видаліть ці сервери або перенесіть їх в інший датацентр.\",\n    \"details\": {\n      \"instances_count\": 2\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Malformed JSON - 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"broken\",",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/vendors",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"name\": \"broken\",",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 400,\n    \"code\": \"parse_error\",\n    \"message\": \"JSON parse error - Expecting property name enclosed in double quotes: line 1 column 19 (char 18)\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Method not allowed - 405",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 405\", function () {",
+                  "    pm.response.to.have.status(405);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(405);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/instances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "405 Method Not Allowed",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/instances",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances"
+                  ]
+                }
+              },
+              "status": "Method Not Allowed",
+              "code": 405,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 405,\n    \"code\": \"method_not_allowed\",\n    \"message\": \"Метод \\\"DELETE\\\" не дозволений.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Unknown endpoint - 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/servers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "servers"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/servers",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "servers"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 404,\n    \"code\": \"not_found\",\n    \"message\": \"Ендпоінт GET /api/v1/servers не існує. Перевірте адресу запиту (URL вказуються без кінцевого слеша).\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cleanup",
+      "item": [
+        {
+          "name": "Delete instance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/instances/{{instance_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances",
+                "{{instance_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/instances/{{instance_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances",
+                    "{{instance_id}}"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Delete instance - 404 already deleted",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/instances/{{instance_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances",
+                "{{instance_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/instances/{{instance_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances",
+                    "{{instance_id}}"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 404,\n    \"code\": \"not_found\",\n    \"message\": \"Сервер (інстанс) з id=7 не знайдено.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete datacenter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters",
+                "{{datacenter_id}}"
+              ]
+            },
+            "description": "Тепер датацентр порожній, тож його можна видалити."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters",
+                    "{{datacenter_id}}"
+                  ]
+                },
+                "description": "Тепер датацентр порожній, тож його можна видалити."
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Delete vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vendors/{{vendor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                "{{vendor_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/vendors/{{vendor_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "vendors",
+                    "{{vendor_id}}"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "datacenter_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "vendor_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "instance_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

@@ -2,6 +2,78 @@
 
 SkyCompute — це хмарна вебплатформа для оренди віртуальних серверів, високопродуктивних обчислювальних потужностей (vCPU/RAM) та спеціалізованих GPU/TPU прискорювачів для інженерів, ML-дослідників і стартапів (у стилі Google Cloud Compute Engine).
 
+> **Стан реалізації.** Наразі реалізовано REST API (Django + Django REST framework) для основних ресурсів: **сервери (інстанси)**, **датацентри** та **апаратні вендори** — повний CRUD, бізнес-правила та єдиний формат помилок. Авторизація, профіль, кошик і замовлення (розділи 2.4–2.7) описані як план і будуть реалізовані на наступних етапах.
+>
+> Фронтенд, що демонструє роботу з API з іншого порту (CORS), знаходиться в окремому репозиторії.
+
+---
+
+## Як запустити проєкт
+
+Потрібен Python 3.12, 3.13 або 3.14. Усі команди виконуються з кореня репозиторію (де лежить `manage.py`).
+
+1. Створіть і активуйте віртуальне середовище:
+
+   ```bash
+   python -m venv .venv
+
+   # Linux / macOS
+   source .venv/bin/activate
+   # Windows
+   .venv\Scripts\activate
+   ```
+
+2. Встановіть залежності:
+
+   ```bash
+   python -m pip install -r requirements.txt
+   # для розробки (лінтери та форматери шаблону курсу):
+   python -m pip install -r requirements-dev.txt
+   ```
+
+3. Застосуйте міграції (створиться локальна SQLite-база `db.sqlite3`):
+
+   ```bash
+   python manage.py migrate
+   ```
+
+4. *(Необов'язково)* Завантажте демонстраційні дані — 4 датацентри, 4 вендори, 6 серверів:
+
+   ```bash
+   python manage.py loaddata sample_data
+   ```
+
+5. Запустіть сервер розробки:
+
+   ```bash
+   python manage.py runserver
+   ```
+
+API доступне за адресою **http://127.0.0.1:8000/api/v1/** (наприклад, http://127.0.0.1:8000/api/v1/instances), адмінка — http://127.0.0.1:8000/admin/ (користувача створює `python manage.py createsuperuser`).
+
+### Адреси та порти
+
+| Компонент | Адреса |
+| --- | --- |
+| Бекенд (Django API) | `http://127.0.0.1:8000/api/v1/` |
+| Фронтенд (окремий репозиторій) | `http://localhost:3000` |
+
+CORS налаштовано через `django-cors-headers` (`CORS_ALLOWED_ORIGINS` у [config/settings.py](config/settings.py)): запити дозволені лише з `http://localhost:3000` та `http://127.0.0.1:3000`, а не з будь-якого домену.
+
+### Тести та перевірка стилю
+
+```bash
+python manage.py test            # функціональні тести API
+python check_submission.py       # PEP 8 (ruff), HTML/CSS/JS-форматування
+python check_submission.py --format  # автоматичне форматування
+```
+
+### Postman
+
+Колекція у форматі Collection v2.1: [postman/SkyCompute.postman_collection.json](postman/SkyCompute.postman_collection.json). Базова адреса винесена у змінну колекції `{{base_url}}` (за замовчуванням `http://127.0.0.1:8000/api/v1`).
+
+Колекція покриває всі ендпоінти та містить як успішні запити, так і запити з помилками (400, 404, 405, 409). Для кожного запиту збережено приклад відповіді та тести статус-коду. Запити розраховані на послідовний запуск через **Collection Runner** на базі з демонстраційними даними: `Create ...` зберігають `id` нових об'єктів у змінні `{{datacenter_id}}`, `{{vendor_id}}`, `{{instance_id}}`, а папка `Cleanup` видаляє створене.
+
 ---
 
 ## 1. Опис застосунку та бізнес-логіка
@@ -31,6 +103,9 @@ SkyCompute — це хмарна вебплатформа для оренди в
 * Використання іменників у множині для ідентифікації ресурсів
 * Обмін даними здійснюється у форматі **JSON** (`Content-Type: application/json`)
 * Суворе дотримання семантики HTTP-методів (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) та відповідних статус-кодів
+* URL вказуються **без кінцевого слеша** (`/api/v1/instances`, а не `/api/v1/instances/`)
+* `PUT` — повне оновлення (потрібні всі обов'язкові поля), `PATCH` — часткове (лише змінювані поля)
+* Усі помилки повертаються в єдиному форматі — див. [розділ 2.8](#28-обробка-помилок)
 
 ### 2.1. Каталог серверів (Compute Instances)
 
@@ -41,10 +116,10 @@ SkyCompute — це хмарна вебплатформа для оренди в
   * `category` *(string)*: фільтр за категорією (`general`, `compute_optimized`, `accelerator_optimized`).
   * `datacenter_id` *(integer)*: фільтр за ідентифікатором датацентру.
   * `vendor_id` *(integer)*: фільтр за вендором обладнання.
-  * `sort` *(string)*: поле сортування (`price`, `-price`, `ram_gb`, `-ram_gb`, `-rent_count`).
+  * `sort` *(string)*: поле сортування (`price`, `-price`, `ram_gb`, `-ram_gb`). Сортування за популярністю (`-rent_count`) з'явиться разом із замовленнями.
   * `page` *(integer)*: номер сторінки (за замовчуванням `1`).
-  * `limit` *(integer)*: кількість записів на сторінку (за замовчуванням `10`).
-* **Response Status:** `200 OK`
+  * `limit` *(integer)*: кількість записів на сторінку (за замовчуванням `10`, максимум `100`).
+* **Response Status:** `200 OK` / `400 Bad Request` (невідоме значення `category` чи `sort`, нечислові або менші за 1 `page`, `limit`, `datacenter_id`, `vendor_id`)
 * **Response Body:**
 ```json
 {
@@ -106,13 +181,21 @@ SkyCompute — це хмарна вебплатформа для оренди в
     "id": 1,
     "name": "NVIDIA",
     "architecture": "Ampere"
-  }
+  },
+  "created_at": "2026-10-02T10:00:00Z"
 }
 ```
 
 #### `POST /api/v1/instances`
-* **Призначення:** Додавання нового типу сервера до каталогу (для адміністраторів).
-* **Response Status:** `201 Created` / `400 Bad Request` / `401 Unauthorized` / `403 Forbidden`
+* **Призначення:** Додавання нового типу сервера до каталогу (для адміністраторів; поки авторизації немає, ендпоінт публічний — `401`/`403` з'являться разом з автентифікацією).
+* **Response Status:** `201 Created` / `400 Bad Request`
+* **Правила валідації:**
+  * `name` — унікальна; `category` ∈ `general`, `compute_optimized`, `accelerator_optimized`; `storage_type` ∈ `HDD`, `SSD`, `NVMe SSD`;
+  * `vcpu`, `ram_gb`, `storage_size_gb`, `network_bandwidth_gbps` ≥ 1; `hourly_price` ≥ 0.01; `gpu_count` ≥ 0;
+  * `datacenter_id` і `vendor_id` мають посилатися на існуючі об'єкти (інакше `400` з поясненням у `details`);
+  * якщо `gpu_count > 0`, потрібно вказати `gpu_model`, і навпаки — для `gpu_model` потрібен `gpu_count ≥ 1`;
+  * сервер категорії `accelerator_optimized` повинен мати хоча б один GPU;
+  * `is_available` — необов'язкове, за замовчуванням `true`; `description` і `gpu_model` — необов'язкові.
 * **Request Body:**
 ```json
 {
@@ -157,6 +240,18 @@ SkyCompute — це хмарна вебплатформа для оренди в
 * **Призначення:** Повне оновлення параметрів існуючого сервера.
 * **Response Status:** `200 OK` / `400 Bad Request` / `404 Not Found`
 * **Request Body:** Повна JSON-структура конфігурації сервера (як у `POST`).
+* **Response Body (200 OK):** Оновлений об'єкт у тому ж форматі, що й відповідь `POST`.
+
+#### `PATCH /api/v1/instances/{id}`
+* **Призначення:** Часткове оновлення сервера, наприклад тимчасове виведення з експлуатації.
+* **Response Status:** `200 OK` / `400 Bad Request` / `404 Not Found`
+* **Request Body:** Лише поля, які потрібно змінити. Бізнес-правила перевіряються з урахуванням поточних значень (наприклад, не можна прибрати GPU в `accelerator_optimized`-сервера).
+```json
+{
+  "is_available": false
+}
+```
+* **Response Body (200 OK):** Оновлений об'єкт у форматі відповіді `POST`.
 
 #### `DELETE /api/v1/instances/{id}`
 * **Призначення:** Видалення конфігурації сервера з каталогу.
@@ -178,7 +273,8 @@ SkyCompute — це хмарна вебплатформа для оренди в
     "region_code": "us-central1",
     "city": "Council Bluffs",
     "country": "USA",
-    "sla_percent": "99.99"
+    "sla_percent": "99.99",
+    "created_at": "2026-10-01T09:00:00Z"
   },
   {
     "id": 2,
@@ -186,7 +282,8 @@ SkyCompute — це хмарна вебплатформа для оренди в
     "region_code": "europe-west3",
     "city": "Frankfurt",
     "country": "Germany",
-    "sla_percent": "99.99"
+    "sla_percent": "99.99",
+    "created_at": "2026-10-01T09:00:00Z"
   }
 ]
 ```
@@ -194,14 +291,17 @@ SkyCompute — це хмарна вебплатформа для оренди в
 #### `GET /api/v1/datacenters/{id}`
 * **Призначення:** Отримання детальної інформації про конкретний датацентр.
 * **Response Status:** `200 OK` / `404 Not Found`
+* **Response Body (200 OK):** Об'єкт датацентру (як елемент списку вище).
 
 #### `GET /api/v1/datacenters/{id}/instances`
 * **Призначення:** Отримання всіх серверів, які розміщені у цьому датацентрі.
 * **Response Status:** `200 OK` / `404 Not Found`
+* **Response Body (200 OK):** Масив серверів у форматі елементів `results` з `GET /api/v1/instances` (без пагінації).
 
 #### `POST /api/v1/datacenters`
 * **Призначення:** Реєстрація нового датацентру в системі.
 * **Response Status:** `201 Created` / `400 Bad Request`
+* **Правила валідації:** `name` — унікальна; `name`, `region_code`, `city`, `country` — обов'язкові; `sla_percent` — від 0 до 100 (за замовчуванням `99.99`).
 * **Request Body:**
 ```json
 {
@@ -212,14 +312,33 @@ SkyCompute — це хмарна вебплатформа для оренди в
   "sla_percent": "99.99"
 }
 ```
+* **Response Body (201 Created):** Створений об'єкт з `id` та `created_at`.
 
 #### `PUT /api/v1/datacenters/{id}`
-* **Призначення:** Оновлення інформації про датацентр.
-* **Response Status:** `200 OK` / `404 Not Found`
+* **Призначення:** Повне оновлення інформації про датацентр.
+* **Response Status:** `200 OK` / `400 Bad Request` / `404 Not Found`
+
+#### `PATCH /api/v1/datacenters/{id}`
+* **Призначення:** Часткове оновлення інформації про датацентр.
+* **Response Status:** `200 OK` / `400 Bad Request` / `404 Not Found`
 
 #### `DELETE /api/v1/datacenters/{id}`
 * **Призначення:** Видалення датацентру.
-* **Response Status:** `204 No Content` / `404 Not Found`
+* **Response Status:** `204 No Content` / `404 Not Found` / `409 Conflict`
+* **Бізнес-правило:** датацентр, у якому розміщені сервери, видалити не можна — спочатку потрібно видалити ці сервери або перенести їх в інший датацентр.
+* **Response Body (409 Conflict):**
+```json
+{
+  "error": {
+    "status": 409,
+    "code": "datacenter_has_instances",
+    "message": "Неможливо видалити датацентр «us-central1-a», оскільки в ньому розміщено 2 сервери. Спочатку видаліть ці сервери або перенесіть їх в інший датацентр.",
+    "details": {
+      "instances_count": 2
+    }
+  }
+}
+```
 
 ---
 
@@ -235,13 +354,15 @@ SkyCompute — це хмарна вебплатформа для оренди в
     "id": 1,
     "name": "NVIDIA",
     "architecture": "Ampere / Hopper",
-    "website": "https://www.nvidia.com"
+    "website": "https://www.nvidia.com",
+    "created_at": "2026-10-01T09:00:00Z"
   },
   {
     "id": 2,
     "name": "Google Cloud TPU",
     "architecture": "TPU v4 Tensor Core",
-    "website": "https://cloud.google.com/tpu"
+    "website": "https://cloud.google.com/tpu",
+    "created_at": "2026-10-01T09:00:00Z"
   }
 ]
 ```
@@ -253,10 +374,12 @@ SkyCompute — це хмарна вебплатформа для оренди в
 #### `GET /api/v1/vendors/{id}/instances`
 * **Призначення:** Список усіх серверів, що працюють на апаратній базі обраного вендора.
 * **Response Status:** `200 OK` / `404 Not Found`
+* **Response Body (200 OK):** Масив серверів у форматі елементів `results` з `GET /api/v1/instances` (без пагінації).
 
 #### `POST /api/v1/vendors`
 * **Призначення:** Додавання нового вендора до платформи.
 * **Response Status:** `201 Created` / `400 Bad Request`
+* **Правила валідації:** `name` — унікальна й обов'язкова; `architecture` — обов'язкове; `website` — необов'язковий коректний URL.
 * **Request Body:**
 ```json
 {
@@ -267,12 +390,17 @@ SkyCompute — це хмарна вебплатформа для оренди в
 ```
 
 #### `PUT /api/v1/vendors/{id}`
-* **Призначення:** Редагування інформації про вендора.
-* **Response Status:** `200 OK` / `404 Not Found`
+* **Призначення:** Повне редагування інформації про вендора.
+* **Response Status:** `200 OK` / `400 Bad Request` / `404 Not Found`
+
+#### `PATCH /api/v1/vendors/{id}`
+* **Призначення:** Часткове редагування інформації про вендора.
+* **Response Status:** `200 OK` / `400 Bad Request` / `404 Not Found`
 
 #### `DELETE /api/v1/vendors/{id}`
 * **Призначення:** Видалення вендора.
-* **Response Status:** `204 No Content` / `404 Not Found`
+* **Response Status:** `204 No Content` / `404 Not Found` / `409 Conflict`
+* **Бізнес-правило:** вендора, за яким закріплені сервери, видалити не можна (код помилки `vendor_has_instances`, у `details.instances_count` — кількість серверів).
 
 ---
 
@@ -440,6 +568,43 @@ SkyCompute — це хмарна вебплатформа для оренди в
   "terms_url": "https://skycompute.io/terms"
 }
 ```
+
+---
+
+### 2.8. Обробка помилок
+
+Усі ендпоінти повертають помилки в однаковому форматі:
+
+```json
+{
+  "error": {
+    "status": 400,
+    "code": "validation_error",
+    "message": "Передані дані некоректні. Виправте помилки, наведені в полі details, і повторіть запит.",
+    "details": {
+      "vcpu": ["Переконайтесь, що значення більше або дорівнює 1."],
+      "datacenter_id": ["Датацентр з id=9999 не існує."]
+    }
+  }
+}
+```
+
+* `status` — дублює HTTP-статус (зручно, коли клієнт логує лише тіло);
+* `code` — машинозчитуваний код помилки, за яким фронтенд може реагувати;
+* `message` — зрозуміле користувачу пояснення, що сталося і що робити;
+* `details` — для `400` містить помилки по кожному полю, для `409` — додатковий контекст (наприклад, `instances_count`), інакше `{}`.
+
+Формат забезпечує власний обробник винятків DRF ([catalog/exceptions.py](catalog/exceptions.py)), тому він однаковий і для помилок валідації, і для 404, 405, некоректного JSON. Невідомі адреси під `/api/` також повертають JSON-помилку `404`.
+
+| Статус | `code` | Коли виникає | Чому саме цей статус |
+| --- | --- | --- | --- |
+| `400 Bad Request` | `validation_error` | Невалідні поля тіла запиту або query-параметри (зокрема неіснуючий `datacenter_id`/`vendor_id` у тілі, дубль унікальної назви, порушення правил GPU) | Клієнт надіслав дані, які не можна прийняти; виправивши їх, він може повторити запит |
+| `400 Bad Request` | `parse_error` | Тіло запиту — некоректний JSON | Запит синтаксично неправильний |
+| `404 Not Found` | `not_found` | Об'єкта з таким `id` в URL немає або адреса не існує | Ресурс, на який вказує URL, відсутній |
+| `405 Method Not Allowed` | `method_not_allowed` | Метод не підтримується ендпоінтом (напр. `DELETE /instances`) | Ресурс існує, але не підтримує цю дію |
+| `409 Conflict` | `datacenter_has_instances`, `vendor_has_instances` | Видалення датацентру / вендора, за яким закріплені сервери | Запит коректний, але конфліктує з поточним станом даних; конфлікт можна усунути (видалити або перенести сервери) і повторити запит |
+
+> Посилання на неіснуючий датацентр у **тілі** `POST /instances` повертає `400`, а не `404`: сам ресурс `/instances` існує, некоректне лише значення поля. `404` використовується тільки тоді, коли відсутній ресурс з **URL**.
 
 ---
 
