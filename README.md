@@ -2,9 +2,9 @@
 
 SkyCompute — це хмарна вебплатформа для оренди віртуальних серверів, високопродуктивних обчислювальних потужностей (vCPU/RAM) та спеціалізованих GPU/TPU прискорювачів для інженерів, ML-дослідників і стартапів (у стилі Google Cloud Compute Engine).
 
-> **Стан реалізації.** Наразі реалізовано REST API (Django + Django REST framework) для основних ресурсів: **сервери (інстанси)**, **датацентри** та **апаратні вендори** — повний CRUD, бізнес-правила та єдиний формат помилок. Авторизація, профіль, кошик і замовлення (розділи 2.4–2.7) описані як план і будуть реалізовані на наступних етапах.
+> **Стан реалізації.** Реалізовано REST API (Django + Django REST framework + SimpleJWT) для основних ресурсів (**сервери (інстанси)**, **датацентри**, **апаратні вендори**) та окремий застосунок `users` для **реєстрації**, **JWT-авторизації (access + refresh)**, **профілю користувача** і **рольового розмежування прав доступу** (`AllowAny` / `IsAuthenticated` / `Admin`). Кошик і замовлення (розділи 2.5–2.7) описані як план на наступні етапи.
 >
-> Фронтенд, що демонструє роботу з API з іншого порту (CORS), знаходиться в окремому репозиторії.
+> Фронтенд із підтримкою реєстрації, логіну, захищених маршрутів та автоматичного оновлення access-токена через refresh-токен знаходиться в окремому репозиторії.
 
 ---
 
@@ -37,11 +37,15 @@ SkyCompute — це хмарна вебплатформа для оренди в
    python manage.py migrate
    ```
 
-4. *(Необов'язково)* Завантажте демонстраційні дані — 4 датацентри, 4 вендори, 6 серверів:
+4. *(Необов'язково)* Завантажте демонстраційні дані — 2 тестові акаунти, 4 датацентри, 4 вендори, 6 серверів:
 
    ```bash
    python manage.py loaddata sample_data
    ```
+
+   **Демо-акаунти з фікстури `sample_data`:**
+   * **Адміністратор (`role: "admin"`, `is_staff: true`):** логін `admin`, пароль `AdminPass123!`
+   * **Звичайний користувач (`role: "user"`, `is_staff: false`):** логін `developer`, пароль `DevPass123!`
 
 5. Запустіть сервер розробки:
 
@@ -60,11 +64,10 @@ API доступне за адресою **http://127.0.0.1:8000/api/v1/** (на
 
 CORS налаштовано через `django-cors-headers` (`CORS_ALLOWED_ORIGINS` у [config/settings.py](config/settings.py)): запити дозволені лише з `http://localhost:3000` та `http://127.0.0.1:3000`, а не з будь-якого домену.
 
-### Тести та перевірка стилю
+### Перевірка стилю
 
 ```bash
-python manage.py test            # функціональні тести API
-python check_submission.py       # PEP 8 (ruff), HTML/CSS/JS-форматування
+python check_submission.py           # PEP 8 (ruff), HTML/CSS/JS-форматування
 python check_submission.py --format  # автоматичне форматування
 ```
 
@@ -404,26 +407,70 @@ python check_submission.py --format  # автоматичне форматува
 
 ---
 
-### 2.4. Користувачі та Авторизація (Auth & Profile)
+### 2.4. Користувачі, Реєстрація, JWT-Авторизація та Права доступу (`users` app)
+
+Усі захищені ендпоінти приймають JWT access-токен у HTTP-заголовку:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+* Час життя `access`-токена: **15 хвилин** (`ACCESS_TOKEN_LIFETIME`).
+* Час життя `refresh`-токена: **7 днів** (`REFRESH_TOKEN_LIFETIME`).
+* Коли термін дії `access`-токена спливає, клієнт надсилає `POST /api/v1/auth/refresh` із `refresh`-токеном і отримує новий `access`-токен без повторного введення пароля.
+* Під час виходу (`logout`) збережені `access` та `refresh` токени видаляються на клієнті.
+
+#### Матриця прав доступу (Permissions)
+
+| Ендпоінти | Гість (неавторизований) | Авторизований (`role: "user"`) | Адміністратор (`role: "admin"`, `is_staff=True`) |
+| --- | --- | --- | --- |
+| `GET /instances`, `GET /datacenters`, `GET /vendors` (та вкладені списки) | `200 OK` | `200 OK` | `200 OK` |
+| `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh` | Дозволено | Дозволено | Дозволено |
+| `GET /users/me`, `PATCH /users/me` | `401 Unauthorized` | `200 OK` | `200 OK` |
+| `POST /instances`, `PUT /instances/{id}`, `PATCH /instances/{id}` | `401 Unauthorized` | `201 Created` / `200 OK` | `201 Created` / `200 OK` |
+| `DELETE /instances/{id}` | `401 Unauthorized` | `403 Forbidden` | `204 No Content` |
+| `POST`, `PUT`, `PATCH`, `DELETE` на `/datacenters` та `/vendors` | `401 Unauthorized` | `403 Forbidden` | `201` / `200` / `204` |
 
 #### `POST /api/v1/auth/register`
-* **Призначення:** Реєстрація нового користувача в системі.
+* **Призначення:** Реєстрація нового користувача. Пароль зберігається в БД виключно у захешованому вигляді (PBKDF2 SHA256).
+* **Доступ:** Публічний (`AllowAny`).
+* **Поля та правила валідації:**
+  * `username` *(обов'язкове, max 150 символів)*: унікальне ім'я користувача (літери, цифри та `@/./+/-/_`);
+  * `first_name` *(необов'язкове, можна залишити порожнім `""`, max 150 символів)*;
+  * `last_name` *(необов'язкове, можна залишити порожнім `""`, max 150 символів)*;
+  * `email` *(обов'язкове, max 254 символи)*: коректний формат `name@example.com`, унікальний у системі;
+  * `password` *(обов'язкове, min 8, max 128 символів)*: перевіряється стандартними валідаторами Django (`AUTH_PASSWORD_VALIDATORS`) та має містити щонайменше одну літеру і одну цифру;
+  * `password_confirmation` *(обов'язкове, min 8, max 128 символів)*: має збігатися з `password`.
 * **Response Status:** `201 Created` / `400 Bad Request`
 * **Request Body:**
 ```json
 {
   "username": "ml_engineer",
-  "email": "engineer@naukma.edu.ua",
-  "password": "SecurePassword123!",
   "first_name": "Тарас",
   "last_name": "Шевченко",
-  "company": "KMA AI Labs"
+  "email": "engineer@naukma.edu.ua",
+  "password": "SecurePassword123!",
+  "password_confirmation": "SecurePassword123!"
+}
+```
+* **Response Body (201 Created):**
+```json
+{
+  "id": 3,
+  "username": "ml_engineer",
+  "email": "engineer@naukma.edu.ua",
+  "first_name": "Тарас",
+  "last_name": "Шевченко",
+  "role": "user",
+  "is_staff": false,
+  "date_joined": "2026-11-10T18:00:00Z"
 }
 ```
 
 #### `POST /api/v1/auth/login`
-* **Призначення:** Авторизація користувача та отримання токена доступу.
-* **Response Status:** `200 OK` / `401 Unauthorized`
+* **Призначення:** Автентифікація користувача та отримання пари JWT-токенів (`access` і `refresh`).
+* **Доступ:** Публічний (`AllowAny`).
+* **Response Status:** `200 OK` / `400 Bad Request` / `401 Unauthorized`
 * **Request Body:**
 ```json
 {
@@ -434,36 +481,65 @@ python check_submission.py --format  # автоматичне форматува
 * **Response Body (200 OK):**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user_id": 1,
-  "username": "ml_engineer"
+  "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 3,
+    "username": "ml_engineer",
+    "email": "engineer@naukma.edu.ua",
+    "first_name": "Тарас",
+    "last_name": "Шевченко",
+    "role": "user",
+    "is_staff": false,
+    "date_joined": "2026-11-10T18:00:00Z"
+  }
+}
+```
+
+#### `POST /api/v1/auth/refresh`
+* **Призначення:** Оновлення `access`-токена за допомогою дійсного `refresh`-токена.
+* **Доступ:** Публічний (`AllowAny`).
+* **Response Status:** `200 OK` / `400 Bad Request` / `401 Unauthorized` (якщо `refresh`-токен недійсний або прострочений)
+* **Request Body:**
+```json
+{
+  "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+* **Response Body (200 OK):**
+```json
+{
+  "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
 #### `GET /api/v1/users/me`
 * **Призначення:** Отримання даних профілю поточного авторизованого користувача.
+* **Headers:** `Authorization: Bearer <access_token>`
 * **Response Status:** `200 OK` / `401 Unauthorized`
 * **Response Body:**
 ```json
 {
-  "id": 1,
+  "id": 3,
   "username": "ml_engineer",
   "email": "engineer@naukma.edu.ua",
   "first_name": "Тарас",
   "last_name": "Шевченко",
-  "company": "KMA AI Labs",
-  "created_at": "2026-10-13T12:00:00Z"
+  "role": "user",
+  "is_staff": false,
+  "date_joined": "2026-11-10T18:00:00Z"
 }
 ```
 
 #### `PATCH /api/v1/users/me`
-* **Призначення:** Часткове редагування персональних даних профілю.
-* **Response Status:** `200 OK` / `400 Bad Request`
+* **Призначення:** Часткове редагування персональних даних профілю (`first_name`, `last_name`, `email`).
+* **Headers:** `Authorization: Bearer <access_token>`
+* **Response Status:** `200 OK` / `400 Bad Request` / `401 Unauthorized`
 * **Request Body:**
 ```json
 {
-  "company": "KMA Advanced Computing Lab",
-  "first_name": "Тарас"
+  "first_name": "Тарас Григорович",
+  "last_name": "Шевченко"
 }
 ```
 
@@ -600,6 +676,8 @@ python check_submission.py --format  # автоматичне форматува
 | --- | --- | --- | --- |
 | `400 Bad Request` | `validation_error` | Невалідні поля тіла запиту або query-параметри (зокрема неіснуючий `datacenter_id`/`vendor_id` у тілі, дубль унікальної назви, порушення правил GPU) | Клієнт надіслав дані, які не можна прийняти; виправивши їх, він може повторити запит |
 | `400 Bad Request` | `parse_error` | Тіло запиту — некоректний JSON | Запит синтаксично неправильний |
+| `401 Unauthorized` | `not_authenticated`, `authentication_failed`, `token_not_valid` | Запит без заголовка `Authorization: Bearer`, невірний логін/пароль при вході або недійсний/прострочений JWT-токен | Користувач не підтвердив свою особу; після входу або оновлення токена запит можна повторити |
+| `403 Forbidden` | `permission_denied` | Авторизований користувач з роллю `user` намагається виконати дію, доступну лише адміністраторам (`is_staff=True`) | Особу користувача підтверджено, але його роль не дає права на операцію |
 | `404 Not Found` | `not_found` | Об'єкта з таким `id` в URL немає або адреса не існує | Ресурс, на який вказує URL, відсутній |
 | `405 Method Not Allowed` | `method_not_allowed` | Метод не підтримується ендпоінтом (напр. `DELETE /instances`) | Ресурс існує, але не підтримує цю дію |
 | `409 Conflict` | `datacenter_has_instances`, `vendor_has_instances` | Видалення датацентру / вендора, за яким закріплені сервери | Запит коректний, але конфліктує з поточним станом даних; конфлікт можна усунути (видалити або перенести сервери) і повторити запит |

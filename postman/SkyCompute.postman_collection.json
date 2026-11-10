@@ -2,10 +2,1173 @@
   "info": {
     "_postman_id": "3ab04603-47c5-50ec-a316-4c5cd75b33e3",
     "name": "SkyCompute API",
-    "description": "CRUD для датацентрів, апаратних вендорів і серверів (інстансів) SkyCompute.\n\nПеред запуском: `python manage.py migrate`, `python manage.py loaddata sample_data`, `python manage.py runserver`.\nЗапити розраховані на послідовний запуск через Collection Runner: create-запити зберігають id у змінні колекції, а папка Cleanup видаляє створені об'єкти.\n\nУсі помилки мають формат `{\"error\": {\"status\", \"code\", \"message\", \"details\"}}`.",
+    "description": "Реєстрація, JWT-авторизація, профіль користувача, розмежування прав доступу та CRUD для датацентрів, апаратних вендорів і серверів (інстансів) SkyCompute.\n\nПеред запуском: `python manage.py migrate`, `python manage.py loaddata sample_data`, `python manage.py runserver`.\nЗапити розраховані на послідовний запуск через Collection Runner: логін зберігає JWT-токени у змінні колекції, create-запити зберігають id, а папка Cleanup видаляє створені об'єкти.\n\nУсі помилки мають формат `{\"error\": {\"status\", \"code\", \"message\", \"details\"}}`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
+    {
+      "name": "Authentication & Profile",
+      "item": [
+        {
+          "name": "Register user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Реєстрація нового користувача з перевіркою складності пароля та збереженням хешу.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"ml_researcher\",\n  \"first_name\": \"Леся\",\n  \"last_name\": \"Українка\",\n  \"email\": \"lesya@naukma.edu.ua\",\n  \"password\": \"ResearchPassword99!\",\n  \"password_confirmation\": \"ResearchPassword99!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "description": "Реєстрація нового користувача з перевіркою складності пароля та збереженням хешу.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"ml_researcher\",\n  \"first_name\": \"Леся\",\n  \"last_name\": \"Українка\",\n  \"email\": \"lesya@naukma.edu.ua\",\n  \"password\": \"ResearchPassword99!\",\n  \"password_confirmation\": \"ResearchPassword99!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 3,\n  \"username\": \"ml_researcher\",\n  \"email\": \"lesya@naukma.edu.ua\",\n  \"first_name\": \"Леся\",\n  \"last_name\": \"Українка\",\n  \"role\": \"user\",\n  \"is_staff\": false,\n  \"date_joined\": \"2026-11-10T18:08:43.065694Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Register user - 400 validation errors",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Помилки валідації: дубль username, некоректний email, закороткий пароль і розбіжність password_confirmation.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"email\": \"invalid-email\",\n  \"password\": \"short\",\n  \"password_confirmation\": \"mismatch\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "description": "Помилки валідації: дубль username, некоректний email, закороткий пароль і розбіжність password_confirmation.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"admin\",\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"email\": \"invalid-email\",\n  \"password\": \"short\",\n  \"password_confirmation\": \"mismatch\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 400,\n    \"code\": \"validation_error\",\n    \"message\": \"Передані дані некоректні. Виправте помилки, наведені в полі details, і повторіть запит.\",\n    \"details\": {\n      \"username\": [\n        \"Користувач із таким ім'ям вже існує.\"\n      ],\n      \"email\": [\n        \"Введіть коректну адресу електронної пошти.\"\n      ],\n      \"password\": [\n        \"Переконайтесь, що в цьому полі мінімум 8 символів.\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login as regular user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set(\"user_access_token\", pm.response.json().access);",
+                  "pm.collectionVariables.set(\"user_refresh_token\", pm.response.json().refresh);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Автентифікація звичайного користувача (role=user). Зберігає токени у змінні {{user_access_token}} та {{user_refresh_token}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"ml_researcher\",\n  \"password\": \"ResearchPassword99!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Автентифікація звичайного користувача (role=user). Зберігає токени у змінні {{user_access_token}} та {{user_refresh_token}}.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"ml_researcher\",\n  \"password\": \"ResearchPassword99!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzk0MzM1MDI0LCJpYXQiOjE3OTQzMzQxMjQsImp0aSI6ImMyOGQ5NDdmN2ZlNjQ2NWRhNjE1ODBhOGU2ZmU4Mjk4IiwidXNlcl9pZCI6IjMifQ.1XqGZBlf2R3ZET_-sH3AxkqnYb4SCGP5n75Z26cNqzw\",\n  \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc5NDkzODkyNCwiaWF0IjoxNzk0MzM0MTI0LCJqdGkiOiI0ZDE2OWViYTQ0MDE0NjRhODNiMGI5NzQ2YmFkOWE0YiIsInVzZXJfaWQiOiIzIn0.Z_LCkcQHwT0MO-gkPoBEHRsWTVugMrFMZi94ZKd_VJo\",\n  \"user\": {\n    \"id\": 3,\n    \"username\": \"ml_researcher\",\n    \"email\": \"lesya@naukma.edu.ua\",\n    \"first_name\": \"Леся\",\n    \"last_name\": \"Українка\",\n    \"role\": \"user\",\n    \"is_staff\": false,\n    \"date_joined\": \"2026-11-10T18:08:43.065694Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login as admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set(\"access_token\", pm.response.json().access);",
+                  "pm.collectionVariables.set(\"refresh_token\", pm.response.json().refresh);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Автентифікація адміністратора (role=admin, is_staff=true). Зберігає токени у змінні {{access_token}} та {{refresh_token}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"AdminPass123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Автентифікація адміністратора (role=admin, is_staff=true). Зберігає токени у змінні {{access_token}} та {{refresh_token}}.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"AdminPass123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzk0MzM1MDI1LCJpYXQiOjE3OTQzMzQxMjUsImp0aSI6Ijc3ZTJkMGY4NjJlZjQ3ODVhZWZlMmExZDA3OTlmMzcxIiwidXNlcl9pZCI6IjEifQ.lLLVBCo_M8ZK0OI7INE4vlvya6QEQ-KoEebMyrmBJy4\",\n  \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc5NDkzODkyNSwiaWF0IjoxNzk0MzM0MTI1LCJqdGkiOiJhOGVjMGI0MjA1MTU0MGYwYWViYjQ4NjU0Y2ZiNTk4MyIsInVzZXJfaWQiOiIxIn0.IM6qkgUzjd22hhZ9iVWcFcWMHhmPwJ7nZWAkJn0MzxQ\",\n  \"user\": {\n    \"id\": 1,\n    \"username\": \"admin\",\n    \"email\": \"admin@skycompute.io\",\n    \"first_name\": \"Олена\",\n    \"last_name\": \"Коваленко\",\n    \"role\": \"admin\",\n    \"is_staff\": true,\n    \"date_joined\": \"2026-10-01T09:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login - 401 invalid credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Невірний пароль повертає 401 Unauthorized у єдиному форматі помилки.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"WrongPassword123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Невірний пароль повертає 401 Unauthorized у єдиному форматі помилки.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"WrongPassword123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 401,\n    \"code\": \"authentication_failed\",\n    \"message\": \"Невірне ім'я користувача або пароль.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh access token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set(\"access_token\", pm.response.json().access);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Оновлення access-токена за допомогою дійсного refresh-токена.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/refresh",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh"
+                  ]
+                },
+                "description": "Оновлення access-токена за допомогою дійсного refresh-токена.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzk0MzM1MDI1LCJpYXQiOjE3OTQzMzQxMjUsImp0aSI6IjczMDhkNzNhOTMyOTQ5NGE4MzMwZWRiM2U5ZjVmZTFmIiwidXNlcl9pZCI6IjEifQ.dqiNCa-AULV2t5y2pIFMhShVYCulTlHpEmzxIcbC47Q\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh token - 401 invalid token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Недійсний або прострочений refresh-токен повертає 401 Unauthorized.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"invalid.refresh.token\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/refresh",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh"
+                  ]
+                },
+                "description": "Недійсний або прострочений refresh-токен повертає 401 Unauthorized.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refresh\": \"invalid.refresh.token\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 401,\n    \"code\": \"token_not_valid\",\n    \"message\": \"Токен доступу недійсний або термін його дії минув. Оновіть токен за допомогою refresh-токена або увійдіть в акаунт повторно.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get current user profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "description": "Отримання профілю поточного авторизованого користувача за заголовком Authorization: Bearer."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                },
+                "description": "Отримання профілю поточного авторизованого користувача за заголовком Authorization: Bearer."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 3,\n  \"username\": \"ml_researcher\",\n  \"email\": \"lesya@naukma.edu.ua\",\n  \"first_name\": \"Леся\",\n  \"last_name\": \"Українка\",\n  \"role\": \"user\",\n  \"is_staff\": false,\n  \"date_joined\": \"2026-11-10T18:08:43.065694Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update current user profile (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "description": "Часткове оновлення імені та прізвища поточного користувача.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Лариса\",\n  \"last_name\": \"Косач\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_access_token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                },
+                "description": "Часткове оновлення імені та прізвища поточного користувача.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"first_name\": \"Лариса\",\n  \"last_name\": \"Косач\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 3,\n  \"username\": \"ml_researcher\",\n  \"email\": \"lesya@naukma.edu.ua\",\n  \"first_name\": \"Лариса\",\n  \"last_name\": \"Косач\",\n  \"role\": \"user\",\n  \"is_staff\": false,\n  \"date_joined\": \"2026-11-10T18:08:43.065694Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get profile - 401 without token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "description": "Запит до захищеного ендпоінту без токена повертає 401 Unauthorized."
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                },
+                "description": "Запит до захищеного ендпоінту без токена повертає 401 Unauthorized."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 401,\n    \"code\": \"not_authenticated\",\n    \"message\": \"Для виконання цього запиту необхідна авторизація. Передайте дійсний токен у заголовку Authorization: Bearer <access_token>.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Permissions (401 & 403)",
+      "item": [
+        {
+          "name": "Create instance without token - 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/instances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances"
+              ]
+            },
+            "description": "Неавторизований користувач не може створювати сервери (401 Unauthorized).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": 1,\n  \"vendor_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/instances",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances"
+                  ]
+                },
+                "description": "Неавторизований користувач не може створювати сервери (401 Unauthorized).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": 1,\n  \"vendor_id\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 401,\n    \"code\": \"not_authenticated\",\n    \"message\": \"Для виконання цього запиту необхідна авторизація. Передайте дійсний токен у заголовку Authorization: Bearer <access_token>.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create datacenter as regular user - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/datacenters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datacenters"
+              ]
+            },
+            "description": "Звичайний авторизований користувач (не адмін) отримує 403 Forbidden при спробі змінити датацентри.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "403 Forbidden",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_access_token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/datacenters",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "datacenters"
+                  ]
+                },
+                "description": "Звичайний авторизований користувач (не адмін) отримує 403 Forbidden при спробі змінити датацентри.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 403,\n    \"code\": \"permission_denied\",\n    \"message\": \"У вас недостатньо прав для виконання цієї дії. Ця операція доступна лише адміністраторам платформи.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete instance as regular user - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Error has unified format\", function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.all.keys(\"status\", \"code\", \"message\", \"details\");",
+                  "    pm.expect(error.status).to.eql(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/instances/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instances",
+                "1"
+              ]
+            },
+            "description": "Видалення конфігурацій серверів доступне лише адміністраторам (403 Forbidden для ролі user)."
+          },
+          "response": [
+            {
+              "name": "403 Forbidden",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_access_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/instances/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "instances",
+                    "1"
+                  ]
+                },
+                "description": "Видалення конфігурацій серверів доступне лише адміністраторам (403 Forbidden для ролі user)."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"status\": 403,\n    \"code\": \"permission_denied\",\n    \"message\": \"У вас недостатньо прав для виконання цієї дії. Ця операція доступна лише адміністраторам платформи.\",\n    \"details\": {}\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
     {
       "name": "Datacenters",
       "item": [
@@ -86,6 +1249,11 @@
             "method": "POST",
             "header": [
               {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -99,7 +1267,7 @@
                 "datacenters"
               ]
             },
-            "description": "Створює датацентр і зберігає його id у змінну {{datacenter_id}}.",
+            "description": "Створює датацентр (від імені адміна) і зберігає його id у змінну {{datacenter_id}}.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\"\n}",
@@ -117,6 +1285,11 @@
                 "method": "POST",
                 "header": [
                   {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  },
+                  {
                     "key": "Content-Type",
                     "value": "application/json"
                   }
@@ -130,7 +1303,7 @@
                     "datacenters"
                   ]
                 },
-                "description": "Створює датацентр і зберігає його id у змінну {{datacenter_id}}.",
+                "description": "Створює датацентр (від імені адміна) і зберігає його id у змінну {{datacenter_id}}.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\"\n}",
@@ -150,7 +1323,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\",\n  \"created_at\": \"2026-10-27T18:20:23.724548Z\"\n}"
+              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\",\n  \"created_at\": \"2026-11-10T18:08:45.792138Z\"\n}"
             }
           ]
         },
@@ -209,7 +1382,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\",\n  \"created_at\": \"2026-10-27T18:20:23.724548Z\"\n}"
+              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.99\",\n  \"created_at\": \"2026-11-10T18:08:45.792138Z\"\n}"
             }
           ]
         },
@@ -231,6 +1404,11 @@
           "request": {
             "method": "PUT",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -262,6 +1440,11 @@
               "originalRequest": {
                 "method": "PUT",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -296,7 +1479,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.95\",\n  \"created_at\": \"2026-10-27T18:20:23.724548Z\"\n}"
+              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.95\",\n  \"created_at\": \"2026-11-10T18:08:45.792138Z\"\n}"
             }
           ]
         },
@@ -318,6 +1501,11 @@
           "request": {
             "method": "PATCH",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -349,6 +1537,11 @@
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -383,7 +1576,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina (Kymenlaakso)\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.95\",\n  \"created_at\": \"2026-10-27T18:20:23.724548Z\"\n}"
+              "body": "{\n  \"id\": 5,\n  \"name\": \"europe-north1-a\",\n  \"region_code\": \"europe-north1\",\n  \"city\": \"Hamina (Kymenlaakso)\",\n  \"country\": \"Finland\",\n  \"sla_percent\": \"99.95\",\n  \"created_at\": \"2026-11-10T18:08:45.792138Z\"\n}"
             }
           ]
         },
@@ -472,6 +1665,11 @@
             "method": "POST",
             "header": [
               {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -502,6 +1700,11 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -686,6 +1889,11 @@
             "method": "POST",
             "header": [
               {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -716,6 +1924,11 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -750,7 +1963,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Sapphire Rapids\",\n  \"website\": \"https://www.intel.com\",\n  \"created_at\": \"2026-10-27T18:20:23.800718Z\"\n}"
+              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Sapphire Rapids\",\n  \"website\": \"https://www.intel.com\",\n  \"created_at\": \"2026-11-10T18:08:45.862912Z\"\n}"
             }
           ]
         },
@@ -809,7 +2022,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Sapphire Rapids\",\n  \"website\": \"https://www.intel.com\",\n  \"created_at\": \"2026-10-27T18:20:23.800718Z\"\n}"
+              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Sapphire Rapids\",\n  \"website\": \"https://www.intel.com\",\n  \"created_at\": \"2026-11-10T18:08:45.862912Z\"\n}"
             }
           ]
         },
@@ -831,6 +2044,11 @@
           "request": {
             "method": "PUT",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -862,6 +2080,11 @@
               "originalRequest": {
                 "method": "PUT",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -896,7 +2119,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Emerald Rapids\",\n  \"website\": \"https://www.intel.com\",\n  \"created_at\": \"2026-10-27T18:20:23.800718Z\"\n}"
+              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Emerald Rapids\",\n  \"website\": \"https://www.intel.com\",\n  \"created_at\": \"2026-11-10T18:08:45.862912Z\"\n}"
             }
           ]
         },
@@ -918,6 +2141,11 @@
           "request": {
             "method": "PATCH",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -949,6 +2177,11 @@
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -983,7 +2216,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Emerald Rapids\",\n  \"website\": \"https://www.intel.com/xeon\",\n  \"created_at\": \"2026-10-27T18:20:23.800718Z\"\n}"
+              "body": "{\n  \"id\": 5,\n  \"name\": \"Intel\",\n  \"architecture\": \"Xeon Emerald Rapids\",\n  \"website\": \"https://www.intel.com/xeon\",\n  \"created_at\": \"2026-11-10T18:08:45.862912Z\"\n}"
             }
           ]
         },
@@ -1072,6 +2305,11 @@
             "method": "POST",
             "header": [
               {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -1101,6 +2339,11 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1564,6 +2807,11 @@
             "method": "POST",
             "header": [
               {
+                "key": "Authorization",
+                "value": "Bearer {{user_access_token}}",
+                "type": "text"
+              },
+              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -1577,7 +2825,7 @@
                 "instances"
               ]
             },
-            "description": "Використовує {{datacenter_id}} та {{vendor_id}}, створені раніше. Зберігає id у змінну {{instance_id}}.",
+            "description": "Створення конфігурації сервера авторизованим користувачем. Зберігає id у змінну {{instance_id}}.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": {{datacenter_id}},\n  \"vendor_id\": {{vendor_id}}\n}",
@@ -1595,6 +2843,11 @@
                 "method": "POST",
                 "header": [
                   {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_access_token}}",
+                    "type": "text"
+                  },
+                  {
                     "key": "Content-Type",
                     "value": "application/json"
                   }
@@ -1608,7 +2861,7 @@
                     "instances"
                   ]
                 },
-                "description": "Використовує {{datacenter_id}} та {{vendor_id}}, створені раніше. Зберігає id у змінну {{instance_id}}.",
+                "description": "Створення конфігурації сервера авторизованим користувачем. Зберігає id у змінну {{instance_id}}.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": {{datacenter_id}},\n  \"vendor_id\": {{vendor_id}}\n}",
@@ -1628,7 +2881,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": 5,\n  \"vendor_id\": 5,\n  \"is_available\": true,\n  \"created_at\": \"2026-10-27T18:20:23.860016Z\"\n}"
+              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"datacenter_id\": 5,\n  \"vendor_id\": 5,\n  \"is_available\": true,\n  \"created_at\": \"2026-11-10T18:08:45.927871Z\"\n}"
             }
           ]
         },
@@ -1687,7 +2940,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"is_available\": true,\n  \"datacenter\": {\n    \"id\": 5,\n    \"name\": \"europe-north1-a\",\n    \"region_code\": \"europe-north1\",\n    \"city\": \"Hamina (Kymenlaakso)\",\n    \"country\": \"Finland\"\n  },\n  \"vendor\": {\n    \"id\": 5,\n    \"name\": \"Intel\",\n    \"architecture\": \"Xeon Emerald Rapids\"\n  },\n  \"created_at\": \"2026-10-27T18:20:23.860016Z\"\n}"
+              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 8,\n  \"ram_gb\": 32,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.39\",\n  \"is_available\": true,\n  \"datacenter\": {\n    \"id\": 5,\n    \"name\": \"europe-north1-a\",\n    \"region_code\": \"europe-north1\",\n    \"city\": \"Hamina (Kymenlaakso)\",\n    \"country\": \"Finland\"\n  },\n  \"vendor\": {\n    \"id\": 5,\n    \"name\": \"Intel\",\n    \"architecture\": \"Xeon Emerald Rapids\"\n  },\n  \"created_at\": \"2026-11-10T18:08:45.927871Z\"\n}"
             }
           ]
         },
@@ -1709,6 +2962,11 @@
           "request": {
             "method": "PUT",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_access_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -1740,6 +2998,11 @@
               "originalRequest": {
                 "method": "PUT",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1774,7 +3037,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 16,\n  \"ram_gb\": 64,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.78\",\n  \"datacenter_id\": 5,\n  \"vendor_id\": 5,\n  \"is_available\": true,\n  \"created_at\": \"2026-10-27T18:20:23.860016Z\"\n}"
+              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 16,\n  \"ram_gb\": 64,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.78\",\n  \"datacenter_id\": 5,\n  \"vendor_id\": 5,\n  \"is_available\": true,\n  \"created_at\": \"2026-11-10T18:08:45.927871Z\"\n}"
             }
           ]
         },
@@ -1796,6 +3059,11 @@
           "request": {
             "method": "PATCH",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_access_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -1827,6 +3095,11 @@
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1861,7 +3134,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 16,\n  \"ram_gb\": 64,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.78\",\n  \"datacenter_id\": 5,\n  \"vendor_id\": 5,\n  \"is_available\": false,\n  \"created_at\": \"2026-10-27T18:20:23.860016Z\"\n}"
+              "body": "{\n  \"id\": 7,\n  \"name\": \"n2-standard-8\",\n  \"category\": \"general\",\n  \"description\": \"Збалансований інстанс для вебсервісів і баз даних.\",\n  \"vcpu\": 16,\n  \"ram_gb\": 64,\n  \"gpu_model\": null,\n  \"gpu_count\": 0,\n  \"storage_type\": \"SSD\",\n  \"storage_size_gb\": 200,\n  \"network_bandwidth_gbps\": 16,\n  \"hourly_price\": \"0.78\",\n  \"datacenter_id\": 5,\n  \"vendor_id\": 5,\n  \"is_available\": false,\n  \"created_at\": \"2026-11-10T18:08:45.927871Z\"\n}"
             }
           ]
         },
@@ -1888,6 +3161,11 @@
           "request": {
             "method": "POST",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_access_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -1918,6 +3196,11 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1979,6 +3262,11 @@
             "method": "POST",
             "header": [
               {
+                "key": "Authorization",
+                "value": "Bearer {{user_access_token}}",
+                "type": "text"
+              },
+              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -2009,6 +3297,11 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -2071,6 +3364,11 @@
             "method": "POST",
             "header": [
               {
+                "key": "Authorization",
+                "value": "Bearer {{user_access_token}}",
+                "type": "text"
+              },
+              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -2100,6 +3398,11 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -2228,7 +3531,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
               "host": [
@@ -2246,7 +3555,13 @@
               "name": "409 Conflict",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [],
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
                 "url": {
                   "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
                   "host": [
@@ -2294,7 +3609,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/vendors/{{vendor_id}}",
               "host": [
@@ -2312,7 +3633,13 @@
               "name": "409 Conflict",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [],
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
                 "url": {
                   "raw": "{{base_url}}/vendors/{{vendor_id}}",
                   "host": [
@@ -2360,7 +3687,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/datacenters/1",
               "host": [
@@ -2377,7 +3710,13 @@
               "name": "409 Conflict",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [],
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
                 "url": {
                   "raw": "{{base_url}}/datacenters/1",
                   "host": [
@@ -2426,6 +3765,11 @@
             "method": "POST",
             "header": [
               {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -2455,6 +3799,11 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -2514,7 +3863,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/instances",
               "host": [
@@ -2530,7 +3885,13 @@
               "name": "405 Method Not Allowed",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [],
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
                 "url": {
                   "raw": "{{base_url}}/instances",
                   "host": [
@@ -2638,7 +3999,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/instances/{{instance_id}}",
               "host": [
@@ -2655,7 +4022,13 @@
               "name": "204 No Content",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [],
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
                 "url": {
                   "raw": "{{base_url}}/instances/{{instance_id}}",
                   "host": [
@@ -2697,7 +4070,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/instances/{{instance_id}}",
               "host": [
@@ -2714,7 +4093,13 @@
               "name": "404 Not Found",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [],
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
                 "url": {
                   "raw": "{{base_url}}/instances/{{instance_id}}",
                   "host": [
@@ -2756,7 +4141,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
               "host": [
@@ -2774,7 +4165,13 @@
               "name": "204 No Content",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [],
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
                 "url": {
                   "raw": "{{base_url}}/datacenters/{{datacenter_id}}",
                   "host": [
@@ -2812,7 +4209,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/vendors/{{vendor_id}}",
               "host": [
@@ -2829,7 +4232,13 @@
               "name": "204 No Content",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [],
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}",
+                    "type": "text"
+                  }
+                ],
                 "url": {
                   "raw": "{{base_url}}/vendors/{{vendor_id}}",
                   "host": [
@@ -2856,6 +4265,26 @@
     {
       "key": "base_url",
       "value": "http://127.0.0.1:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_refresh_token",
+      "value": "",
       "type": "string"
     },
     {

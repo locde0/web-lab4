@@ -1,5 +1,35 @@
 [
   {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "email": "admin@skycompute.io",
+      "first_name": "Олена",
+      "last_name": "Коваленко",
+      "password": "pbkdf2_sha256$1500000$bs6w2EYodY5ZDaifN2qVt8$NMXxqrtXMoEC2h16X3IIsBMLobSujW0KOEPZqXDCQ68=",
+      "is_staff": true,
+      "is_superuser": true,
+      "is_active": true,
+      "date_joined": "2026-10-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "username": "developer",
+      "email": "dev@skycompute.io",
+      "first_name": "Тарас",
+      "last_name": "Шевченко",
+      "password": "pbkdf2_sha256$1500000$cucIt0jrFb1gBmKzJ8rDC4$145CrUcXNO/dFoIDqFSdWQLxImw2OcXLXDvrCPQ7Xmw=",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true,
+      "date_joined": "2026-10-01T09:00:00Z"
+    }
+  },
+  {
     "model": "catalog.datacenter",
     "pk": 1,
     "fields": {

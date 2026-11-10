@@ -5,6 +5,12 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from users.permissions import (
+    IsAdminRoleOrReadOnly,
+    IsAuthenticatedOrReadOnly,
+    IsAuthenticatedWriteOrAdminDelete,
+)
+
 from .exceptions import ConflictError
 from .models import Datacenter, HardwareVendor, InstanceType
 from .serializers import (
@@ -44,6 +50,7 @@ def get_object_or_404(queryset, pk, message):
 class ResourceListView(APIView):
     """GET a list of objects / POST a new object."""
 
+    permission_classes = [IsAdminRoleOrReadOnly]
     model = None
     serializer_class = None
 
@@ -62,6 +69,7 @@ class ResourceListView(APIView):
 class ResourceDetailView(APIView):
     """GET / PUT / PATCH / DELETE a single object."""
 
+    permission_classes = [IsAdminRoleOrReadOnly]
     model = None
     serializer_class = None
     not_found_message = "Об'єкт з id={pk} не знайдено."
@@ -206,6 +214,8 @@ def parse_positive_int(params, name, errors, default=None, maximum=None):
 
 
 class InstanceListView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         params = request.query_params
         errors = {}
@@ -265,6 +275,7 @@ class InstanceListView(APIView):
 
 
 class InstanceDetailView(ResourceDetailView):
+    permission_classes = [IsAuthenticatedWriteOrAdminDelete]
     model = InstanceType
     serializer_class = InstanceWriteSerializer
     not_found_message = INSTANCE_NOT_FOUND
