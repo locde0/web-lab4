@@ -19,10 +19,19 @@ from django.db.models import ProtectedError
 from django.http import Http404
 from rest_framework import exceptions, status
 from rest_framework.views import exception_handler
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 VALIDATION_MESSAGE = (
     "Передані дані некоректні. Виправте помилки, наведені в полі details, "
     "і повторіть запит."
+)
+NOT_AUTHENTICATED_MESSAGE = (
+    "Для виконання цього запиту необхідна авторизація. "
+    "Передайте дійсний токен у заголовку Authorization: Bearer <access_token>."
+)
+INVALID_TOKEN_MESSAGE = (
+    "Токен доступу недійсний або термін його дії минув. "
+    "Оновіть токен за допомогою refresh-токена або увійдіть в акаунт повторно."
 )
 
 
@@ -55,6 +64,8 @@ def api_exception_handler(exc, context):
         exc = ConflictError(
             "Неможливо видалити об'єкт, оскільки на нього посилаються інші записи."
         )
+    elif isinstance(exc, TokenError) and not isinstance(exc, InvalidToken):
+        exc = InvalidToken(exc.args[0])
 
     response = exception_handler(exc, context)
     if response is None:
@@ -67,6 +78,14 @@ def api_exception_handler(exc, context):
         details = exc.detail
         if not isinstance(details, dict):
             details = {"non_field_errors": details}
+    elif isinstance(exc, InvalidToken):
+        code = "token_not_valid"
+        message = INVALID_TOKEN_MESSAGE
+        details = {}
+    elif isinstance(exc, exceptions.NotAuthenticated):
+        code = "not_authenticated"
+        message = NOT_AUTHENTICATED_MESSAGE
+        details = {}
     else:
         codes = exc.get_codes()
         code = codes if isinstance(codes, str) else "error"

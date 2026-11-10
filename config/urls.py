@@ -22,6 +22,7 @@ from catalog.views import endpoint_not_found
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/v1/", include("users.urls")),
     path("api/v1/", include("catalog.urls")),
     # Any other /api/... URL returns a JSON 404 in the common error format.
     re_path(r"^api/", endpoint_not_found),
