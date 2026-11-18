@@ -2,7 +2,7 @@
 
 SkyCompute — це хмарна вебплатформа для оренди віртуальних серверів, високопродуктивних обчислювальних потужностей (vCPU/RAM) та спеціалізованих GPU/TPU прискорювачів для інженерів, ML-дослідників і стартапів (у стилі Google Cloud Compute Engine).
 
-> **Стан реалізації.** Реалізовано REST API (Django + Django REST framework + SimpleJWT) для основних ресурсів (**сервери (інстанси)**, **датацентри**, **апаратні вендори**) та окремий застосунок `users` для **реєстрації**, **JWT-авторизації (access + refresh)**, **профілю користувача** і **рольового розмежування прав доступу** (`AllowAny` / `IsAuthenticated` / `Admin`). Кошик і замовлення (розділи 2.5–2.7) описані як план на наступні етапи.
+> **Стан реалізації.** Реалізовано REST API (Django + Django REST framework + SimpleJWT + drf-spectacular) для основних ресурсів (**сервери (інстанси)**, **датацентри**, **апаратні вендори**) та окремий застосунок `users` для **реєстрації**, **JWT-авторизації (access + refresh)**, **профілю користувача** і **рольового розмежування прав доступу** (`AllowAny` / `IsAuthenticated` / `Admin`). Додано автоматизовані тести (`pytest` + `pytest-cov`, покриття 97%), інтерактивну документацію OpenAPI 3 (**Swagger UI** та **ReDoc**), структуроване логування та конфігурацію секретів через `.env` (`python-decouple`). Кошик і замовлення (розділи 2.5–2.7) описані як план на наступні етапи.
 >
 > Фронтенд із підтримкою реєстрації, логіну, захищених маршрутів та автоматичного оновлення access-токена через refresh-токен знаходиться в окремому репозиторії.
 
@@ -26,18 +26,34 @@ SkyCompute — це хмарна вебплатформа для оренди в
 2. Встановіть залежності:
 
    ```bash
+   # основні залежності проєкту, OpenAPI-документації та автотестів:
    python -m pip install -r requirements.txt
    # для розробки (лінтери та форматери шаблону курсу):
    python -m pip install -r requirements-dev.txt
    ```
 
-3. Застосуйте міграції (створиться локальна SQLite-база `db.sqlite3`):
+3. Підготуйте локальний файл змінних середовища `.env` на основі шаблону [.env.example](.env.example):
+
+   ```bash
+   # Linux / macOS
+   cp .env.example .env
+   # Windows (PowerShell / CMD)
+   copy .env.example .env
+   ```
+
+   Згенеруйте власний секретний ключ Django та підставте його у змінну `DJANGO_SECRET_KEY` у файлі `.env`:
+
+   ```bash
+   python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+   ```
+
+4. Застосуйте міграції (створиться локальна SQLite-база `db.sqlite3`):
 
    ```bash
    python manage.py migrate
    ```
 
-4. *(Необов'язково)* Завантажте демонстраційні дані — 2 тестові акаунти, 4 датацентри, 4 вендори, 6 серверів:
+5. *(Необов'язково)* Завантажте демонстраційні дані — 2 тестові акаунти, 4 датацентри, 4 вендори, 6 серверів:
 
    ```bash
    python manage.py loaddata sample_data
@@ -47,29 +63,76 @@ SkyCompute — це хмарна вебплатформа для оренди в
    * **Адміністратор (`role: "admin"`, `is_staff: true`):** логін `admin`, пароль `AdminPass123!`
    * **Звичайний користувач (`role: "user"`, `is_staff: false`):** логін `developer`, пароль `DevPass123!`
 
-5. Запустіть сервер розробки:
+6. Запустіть сервер розробки:
 
    ```bash
    python manage.py runserver
    ```
 
-API доступне за адресою **http://127.0.0.1:8000/api/v1/** (наприклад, http://127.0.0.1:8000/api/v1/instances), адмінка — http://127.0.0.1:8000/admin/ (користувача створює `python manage.py createsuperuser`).
+API доступне за адресою **http://127.0.0.1:8000/api/v1/** (наприклад, http://127.0.0.1:8000/api/v1/instances), документація **Swagger UI** — за адресою **http://127.0.0.1:8000/api/docs** (корінь `http://127.0.0.1:8000/` автоматично перенаправляє туди), адмінка — http://127.0.0.1:8000/admin/.
 
-### Адреси та порти
+### Змінні середовища (`.env`)
+
+Конфіденційні налаштування та параметри середовища завантажуються у [config/settings.py](config/settings.py) через `python-decouple`. Файл `.env` додано до [.gitignore](.gitignore) і не потрапляє до репозиторію; шаблон без секретів зберігається у [.env.example](.env.example).
+
+| Змінна | Обов'язкова | За замовчуванням | Призначення |
+| --- | --- | --- | --- |
+| `DJANGO_SECRET_KEY` | так | — | Криптографічний ключ Django та підпису JWT (без дефолту в коді). |
+| `DJANGO_DEBUG` | ні | `False` | Режим налагодження (`True` лише для локальної розробки). |
+| `DJANGO_ALLOWED_HOSTS` | ні | `localhost,127.0.0.1` | Дозволені хости через кому. |
+| `CORS_ALLOWED_ORIGINS` | ні | `http://localhost:3000,http://127.0.0.1:3000` | Дозволені джерела фронтенду для CORS. |
+| `DB_ENGINE` | ні | `django.db.backends.sqlite3` | Рушій БД (`sqlite3` або, наприклад, `django.db.backends.postgresql`). |
+| `DB_NAME` | ні | `db.sqlite3` | Ім'я файлу SQLite або назва серверної БД. |
+| `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | ні | — | Параметри підключення до серверної СКБД (PostgreSQL тощо). |
+| `JWT_ACCESS_TOKEN_LIFETIME_MINUTES` | ні | `15` | Час життя `access`-токена у хвилинах. |
+| `JWT_REFRESH_TOKEN_LIFETIME_DAYS` | ні | `7` | Час життя `refresh`-токена у днях. |
+| `LOG_LEVEL` | ні | `INFO` | Рівень логування застосунків (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |
+
+### Адреси, порти та документація OpenAPI
 
 | Компонент | Адреса |
 | --- | --- |
-| Бекенд (Django API) | `http://127.0.0.1:8000/api/v1/` |
+| Бекенд (Django REST API) | `http://127.0.0.1:8000/api/v1/` |
+| **Swagger UI** (інтерактивна документація) | `http://127.0.0.1:8000/api/docs` |
+| **ReDoc** (документація для читання) | `http://127.0.0.1:8000/api/redoc` |
+| **OpenAPI 3 схема (YAML / JSON)** | `http://127.0.0.1:8000/api/schema` (`?format=json`) |
 | Фронтенд (окремий репозиторій) | `http://localhost:3000` |
 
-CORS налаштовано через `django-cors-headers` (`CORS_ALLOWED_ORIGINS` у [config/settings.py](config/settings.py)): запити дозволені лише з `http://localhost:3000` та `http://127.0.0.1:3000`, а не з будь-якого домену.
-
-### Перевірка стилю
+Схему OpenAPI 3 генерує `drf-spectacular`. Її можна завантажити за адресою `GET /api/schema` (YAML) або `GET /api/schema?format=json` (JSON), або згенерувати у файл командою:
 
 ```bash
-python check_submission.py           # PEP 8 (ruff), HTML/CSS/JS-форматування
-python check_submission.py --format  # автоматичне форматування
+python manage.py spectacular --file schema.yml --validate
 ```
+
+### Автоматизовані тести, покриття та перевірка стилю
+
+Тести написані за допомогою `pytest`, `pytest-django` та фікстур у [conftest.py](conftest.py) ([catalog/tests/test_instances.py](catalog/tests/test_instances.py), [catalog/tests/test_datacenters_vendors.py](catalog/tests/test_datacenters_vendors.py), [users/tests/test_auth.py](users/tests/test_auth.py)).
+
+```bash
+# Запуск усіх автоматизованих тестів:
+pytest
+
+# Запуск тестів із звітом про покриття (pytest-cov):
+pytest --cov --cov-report=term-missing
+
+# Альтернативно через coverage.py напряму:
+coverage run -m pytest
+coverage report -m
+
+# Перевірка стилю коду PEP 8 (ruff), HTML/CSS/JS-форматування:
+python check_submission.py
+python check_submission.py --format
+```
+
+### Логування
+
+Логування налаштовано у [config/settings.py](config/settings.py) для застосунків `catalog`, `users` та системного `django.request`. Записи одночасно виводяться у консоль та у ротований файл `logs/skycompute.log` (до 5 МБ, 3 резервні копії; папка `logs/` у `.gitignore`):
+
+* `DEBUG` — параметри пошуку, фільтрації, сортування й пагінації каталогу серверів (`GET /api/v1/instances`), оновлення `access`-токена.
+* `INFO` — успішні бізнес-операції створення, оновлення та видалення ресурсів (`InstanceType`, `Datacenter`, `HardwareVendor`), реєстрація, вхід та оновлення профілю користувача, а також очікувані помилки валідації (`400`, лише назви полів без значень) і `404`/`409`.
+* `WARNING` — невдалі спроби входу, відхилені/прострочені токени (`401`), спроби доступу без прав адміністратора (`403`) та блокування видалення датацентру чи вендора з прив'язаними серверами (`409`).
+* `ERROR` — необроблені серверні винятки (`500`) із повним стектрейсом.
+* Паролі, JWT-токени та секретні ключі ніколи не записуються у логи (перевіряється автотестами у `TestLogging`).
 
 ### Postman
 
