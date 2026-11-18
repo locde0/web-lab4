@@ -1,13 +1,17 @@
+import logging
+
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError as DjangoValidationError
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -32,6 +36,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "username", "role", "is_staff", "date_joined"]
 
+    @extend_schema_field(serializers.ChoiceField(choices=["user", "admin"]))
     def get_role(self, obj):
         return "admin" if obj.is_staff else "user"
 
@@ -138,7 +143,9 @@ class RegisterSerializer(serializers.Serializer):
     def create(self, validated_data):
         validated_data.pop("password_confirmation", None)
         password = validated_data.pop("password")
-        return User.objects.create_user(password=password, **validated_data)
+        user = User.objects.create_user(password=password, **validated_data)
+        logger.info("User registered: user_id=%s username=%r", user.pk, user.username)
+        return user
 
 
 class LoginSerializer(serializers.Serializer):
@@ -159,9 +166,12 @@ class LoginSerializer(serializers.Serializer):
             password=attrs["password"],
         )
         if user is None or not user.is_active:
+            # The username helps to detect brute force; the password is never logged.
+            logger.warning("Failed login attempt for username=%r", attrs["username"])
             raise AuthenticationFailed("Невірне ім'я користувача або пароль.")
 
         refresh = RefreshToken.for_user(user)
+        logger.info("User logged in: user_id=%s username=%r", user.pk, user.username)
         return {
             "access": str(refresh.access_token),
             "refresh": str(refresh),
@@ -178,6 +188,12 @@ class TokenRefreshRequestSerializer(serializers.Serializer):
         try:
             refresh = RefreshToken(attrs["refresh"])
         except TokenError as exc:
+            # Only the reason is logged, never the token itself.
+            logger.warning("Access token refresh rejected: %s", exc)
             raise InvalidToken(str(exc)) from exc
 
+        logger.debug(
+            "Access token refreshed for user_id=%s",
+            refresh.payload.get("user_id"),
+        )
         return {"access": str(refresh.access_token)}

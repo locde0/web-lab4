@@ -104,6 +104,15 @@ class InstanceListSerializer(serializers.ModelSerializer):
         ]
 
 
+class InstancePageSerializer(serializers.Serializer):
+    """Paginated catalog response (used for the OpenAPI schema)."""
+
+    total = serializers.IntegerField(help_text="Кількість серверів після фільтрів.")
+    page = serializers.IntegerField(help_text="Номер поточної сторінки.")
+    limit = serializers.IntegerField(help_text="Кількість елементів на сторінці.")
+    results = InstanceListSerializer(many=True)
+
+
 class InstanceDetailSerializer(serializers.ModelSerializer):
     """Full representation of one instance type with nested relations."""
 
